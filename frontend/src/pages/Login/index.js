@@ -19,7 +19,7 @@ export default function Login(){
                 <input placeholder="E-mail"/>
                 <input placeholder="Senha"/>
                 <button className="button" type="submit">Entrar</button>
-                <Link to="/recoverPassword">
+                <Link className="back-link" to="/recoverPassword">
                     <FiKey size={16} color="#E02041"/>
                     Recuperar a senha
                 </Link>
