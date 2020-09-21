@@ -1,5 +1,6 @@
 import React from 'react';
-import {FiKey} from 'react-icons/fi'
+import { Link } from 'react-router-dom';
+import {FiKey} from 'react-icons/fi';
 
 import './styles.css';
 
@@ -18,10 +19,10 @@ export default function Login(){
                 <input placeholder="E-mail"/>
                 <input placeholder="Senha"/>
                 <button className="button" type="submit">Entrar</button>
-                <a href="/forgetPass">
+                <Link to="/recoverPassword">
                     <FiKey size={16} color="#E02041"/>
                     Recuperar a senha
-                </a>
+                </Link>
             </form>
 
         </section>
