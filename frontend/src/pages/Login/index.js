@@ -25,7 +25,7 @@ export default function Login() {
         };
 
         try {
-            const response = await api.post('login', data);
+            const response = await api.post('api/login', data);
 
             alert(`Foi enviado um e-mail para a realizar o reset da senha, siga as instruções! ${response.data.id}`);
 
