@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiKey } from 'react-icons/fi';
 import api from '../../services/api';
-
 import './styles.css';
 
 import travelLogoImg from '../../assets/TravelLogo.png';
 import travelImg from '../../assets/TravelsWorld.png';
+
+import { history } from '../../history'
 
 export default function Login() {
 
@@ -25,7 +26,13 @@ export default function Login() {
         };
 
         try {
-            const response = await api.post('api/login', data);
+            const response = await api.post('api/login', data)
+            .then(resp => { const { data } = resp 
+                if (data) {
+                    response.localStrorage.setItem('app-token', data)
+                    history.pushState('/home')
+                }       
+            });
 
             alert(`Foi enviado um e-mail para a realizar o reset da senha, siga as instruções! ${response.data.id}`);
 
