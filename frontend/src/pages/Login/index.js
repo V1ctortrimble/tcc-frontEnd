@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { FiKey } from 'react-icons/fi';
 import api from '../../services/api';
 import './styles.css';
-import { history } from '../../history';
 
 import travelLogoImg from '../../assets/TravelLogo.png';
 import travelImg from '../../assets/TravelsWorld.png';
@@ -11,11 +10,11 @@ import travelImg from '../../assets/TravelsWorld.png';
 
 export default function Login() {
 
-
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    
 
+    const history = useHistory();
+    
     async function handleLogin(e) {
     
         const data = {
@@ -26,16 +25,14 @@ export default function Login() {
         
         try {
            
-            const response = await api.post('/api/login', data)
+            const response = await api.post('api/login', data);
             
-            const user = response.data.token;
-
-            localStorage.setItem('token', user);
+            localStorage.setItem('token', response.data.token);
 
             history.push('/home');   
             
         } catch (error) {
-            alert('Usuário ou senha invalidas');
+            alert('Usuário ou senha inválidos');
         }
     }
 
