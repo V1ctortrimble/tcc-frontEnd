@@ -3,46 +3,41 @@ import { Link } from 'react-router-dom';
 import { FiKey } from 'react-icons/fi';
 import api from '../../services/api';
 import './styles.css';
+import { history } from '../../history';
 
 import travelLogoImg from '../../assets/TravelLogo.png';
 import travelImg from '../../assets/TravelsWorld.png';
 
-import { history } from '../../history'
 
 export default function Login() {
 
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
-
+    
 
     async function handleLogin(e) {
-        e.preventDefault();
-
+    
         const data = {
             username,
             password,
         };
-
+        e.preventDefault();
+        
         try {
-            const response = await api.post('api/login', data)
-            .then(resp => { const { data } = resp 
-                if (data) {
-                    response.localStrorage.setItem('app-token', data)
-                    history.pushState('/home')
-                }       
-            });
+           
+            const response = await api.post('/api/login', data)
+            
+            const user = response.data.token;
 
-            alert(`Foi enviado um e-mail para a realizar o reset da senha, siga as instruções! ${response.data.id}`);
+            localStorage.setItem('token', user);
 
+            history.push('/home');   
+            
         } catch (error) {
-            alert('Erro na recuperação de senha, tente novamente mais tarde.');
+            alert('Usuário ou senha invalidas');
         }
-
     }
-
-
 
     return (
         <div className="login-container">
@@ -67,7 +62,6 @@ export default function Login() {
                     Recuperar a senha
                 </Link>
                 </form>
-
             </section>
             <img src={travelImg} alt="Imagem Viagens" />
         </div>
