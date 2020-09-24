@@ -29,7 +29,7 @@ export default function Login() {
             
             localStorage.setItem('token', response.data.token);
 
-            history.push('/home');   
+            history.push('/admin');   
             
         } catch (error) {
             alert('Usuário ou senha inválidos');
