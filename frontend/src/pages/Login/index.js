@@ -25,9 +25,9 @@ export default function Login() {
         
         try {
            
-            const response = await api.post('api/login', data);
+            const response = await api.post('login', data);
             
-            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('token', response.data.authorization);
 
             history.push('/admin');   
             

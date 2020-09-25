@@ -45,6 +45,7 @@ export default function RecoverPassword() {
                 </section>
                 <form onSubmit={handleRecoverPassword}>
                     <input
+                        type = "email"
                         placeholder="Informe seu e-mail"
                         value={email}
                         onChange={e => setEmail(e.target.value)}

@@ -23,8 +23,14 @@ import Icons from "views/Icons.jsx";
 import Maps from "views/Maps.jsx";
 import Notifications from "views/Notifications.jsx";
 import Upgrade from "views/Upgrade.jsx";
+import RecoverPassword from "pages/RecoverPassword";
 
 const dashboardRoutes = [
+  {
+    path: "/recoverPassword",
+    name: "Recuperação de Senha",
+    component: RecoverPassword
+  },
   {
     path: "/dashboard",
     name: "Dashboard",
