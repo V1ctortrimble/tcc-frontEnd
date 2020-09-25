@@ -38,7 +38,7 @@ class Admin extends Component {
       image: image,
       color: "black",
       hasImage: true,
-      fixedClasses: "dropdown show-dropdown open"
+      fixedClasses: "dropdown show-dropdown closed"
     };
   }
   handleNotificationClick = position => {
@@ -123,7 +123,7 @@ class Admin extends Component {
   };
   componentDidMount() {
     this.setState({ _notificationSystem: this.refs.notificationSystem });
-    var _notificationSystem = this.refs.notificationSystem;
+    /*var _notificationSystem = this.refs.notificationSystem;
     var color = Math.floor(Math.random() * 4 + 1);
     var level;
     switch (color) {
@@ -142,7 +142,7 @@ class Admin extends Component {
       default:
         break;
     }
-    _notificationSystem.addNotification({
+    /*_notificationSystem.addNotification({
       title: <span data-notify="icon" className="pe-7s-gift" />,
       message: (
         <div>
@@ -153,7 +153,7 @@ class Admin extends Component {
       level: level,
       position: "tr",
       autoDismiss: 15
-    });
+    });*/
   }
   componentDidUpdate(e) {
     if (

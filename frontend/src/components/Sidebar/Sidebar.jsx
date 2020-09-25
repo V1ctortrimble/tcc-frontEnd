@@ -16,11 +16,11 @@
 
 */
 import React, { Component } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 import AdminNavbarLinks from "../Navbars/AdminNavbarLinks.jsx";
 
-import logo from "assets/img/reactlogo.png";
+//import logo from "assets/img/reactlogo.png";
 
 class Sidebar extends Component {
   constructor(props) {
@@ -56,20 +56,14 @@ class Sidebar extends Component {
             null
           )}
         <div className="logo">
-          <a
-            href="https://www.creative-tim.com?ref=lbd-sidebar"
-            className="simple-text logo-mini"
-          >
+          <Link className="simple-text logo-mini" to="/admin">
             <div className="logo-img">
-              <img src={logo} alt="logo_image" />
+              <i className="pe-7s-plane"/>
             </div>
-          </a>
-          <a
-            href="https://www.creative-tim.com?ref=lbd-sidebar"
-            className="simple-text logo-normal"
-          >
-            Creative Tim
-          </a>
+          </Link>
+          <Link className="simple-text logo-normal" to="/admin">
+            TRAVEL SYSTEM
+          </Link>
         </div>
         <div className="sidebar-wrapper">
           <ul className="nav">

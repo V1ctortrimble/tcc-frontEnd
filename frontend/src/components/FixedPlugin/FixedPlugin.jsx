@@ -23,6 +23,7 @@ import imagine1 from "assets/img/sidebar-1.jpg";
 import imagine2 from "assets/img/sidebar-2.jpg";
 import imagine3 from "assets/img/sidebar-3.jpg";
 import imagine4 from "assets/img/sidebar-4.jpg";
+import imagine5 from "assets/img/sidebar-5.jpg";
 
 class FixedPlugin extends Component {
   constructor(props) {
@@ -45,7 +46,7 @@ class FixedPlugin extends Component {
       <div className="fixed-plugin">
         <div id="fixedPluginClasses" className={this.props.fixedClasses}>
           <div onClick={this.handleClick}>
-            <i className="fa fa-cog fa-2x" />
+            <i className="pe-7s-settings"/>
           </div>
           <ul className="dropdown-menu">
             <li className="header-title">Configuration</li>
@@ -178,8 +179,19 @@ class FixedPlugin extends Component {
                 <img src={imagine4} alt="..." />
               </a>
             </li>
+            <li className={this.state["bgImage"] === imagine5 ? "active" : ""}>
+              <a
+                className="img-holder switch-trigger"
+                onClick={() => {
+                  this.setState({ bgImage: imagine5 });
+                  this.props.handleImageClick(imagine5);
+                }}
+              >
+                <img src={imagine5} alt="..." />
+              </a>
+            </li>
 
-            <li className="button-container">
+           {/* <li className="button-container">
               <div className="">
                 <a
                   href="https://www.creative-tim.com/product/light-bootstrap-dashboard-react?ref=lbdr-fixed-plugin"
@@ -209,7 +221,7 @@ class FixedPlugin extends Component {
               >
                 Documentation
               </a>
-            </li>
+              </li>*/}
           </ul>
         </div>
       </div>

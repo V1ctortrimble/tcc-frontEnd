@@ -38,13 +38,12 @@ export default function Login() {
 
     return (
         <div className="login-container">
-
             <section className="form">
                 <img src={travelLogoImg} alt="Logo Travel" />
 
                 <form onSubmit={handleLogin}>
                     <h1>Faça seu login</h1>
-                    <input placeholder="Username"
+                    <input placeholder="E-mail"
                         value={username}
                         onChange={e => setUsername(e.target.value)}
                     />

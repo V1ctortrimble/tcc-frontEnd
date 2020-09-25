@@ -54,10 +54,11 @@ class AdminNavbarLinks extends Component {
           </NavItem>
         </Nav>
         <Nav pullRight>
-          <NavItem eventKey={1} href="#">
+          <NavItem className="hidden-lg hidden-md"eventKey={1} href="#">
             Account
           </NavItem>
           <NavDropdown
+            className="hidden-lg hidden-md"
             eventKey={2}
             title="Dropdown"
             id="basic-nav-dropdown-right"
