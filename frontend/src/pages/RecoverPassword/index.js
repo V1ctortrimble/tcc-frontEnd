@@ -23,7 +23,7 @@ export default function RecoverPassword() {
             confirmPassword,
         };
 
-        if (this.password.value === this.confirmPassword.value){
+        if (password.value === confirmPassword.value){
             try {
                 const response = await api.post('recoverPassword', data);
     
