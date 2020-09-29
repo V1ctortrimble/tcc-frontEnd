@@ -20,6 +20,14 @@ import { NavItem, Nav, NavDropdown, MenuItem } from "react-bootstrap";
 
 class AdminNavbarLinks extends Component {
 
+  logout(){
+
+    if (localStorage.getItem("token") != null){
+      localStorage.removeItem("token");
+      window.location.reload();
+    }
+  }
+
   render() {
     const notification = (
       <div>
@@ -71,7 +79,7 @@ class AdminNavbarLinks extends Component {
             <MenuItem divider />
             <MenuItem eventKey={2.5}>Separated link</MenuItem>
           </NavDropdown>
-          <NavItem eventKey={3} href="#">
+          <NavItem eventKey={3} onClick={this.logout}>
             Log out
           </NavItem>
         </Nav>
