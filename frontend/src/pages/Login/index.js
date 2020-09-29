@@ -25,11 +25,11 @@ export default function Login() {
         
         try {
            
-            const response = await api.post('api/login', data);
+            const response = await api.post('login', data);
             
-            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('token', response.data.authorization);
 
-            history.push('/home');   
+            history.push('/admin');   
             
         } catch (error) {
             alert('Usuário ou senha inválidos');
@@ -38,23 +38,23 @@ export default function Login() {
 
     return (
         <div className="login-container">
-
             <section className="form">
                 <img src={travelLogoImg} alt="Logo Travel" />
 
                 <form onSubmit={handleLogin}>
                     <h1>Faça seu login</h1>
-                    <input placeholder="Username"
+                    <input placeholder="E-mail"
+                        type="email"
                         value={username}
                         onChange={e => setUsername(e.target.value)}
                     />
 
-                    <input placeholder="Password"
+                    <input type="password" placeholder="Password"
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                     />
                     <button className="button" type="submit">Entrar</button>
-                    <Link className="back-link" to="/recoverPassword">
+                    <Link className="back-link" to="/forgetPassword">
                         <FiKey size={16} color="#E02041" />
                     Recuperar a senha
                 </Link>
