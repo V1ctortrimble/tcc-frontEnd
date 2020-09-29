@@ -9,23 +9,32 @@ import travelLogoImg from '../../assets/TravelLogo.png';
 
 export default function RecoverPassword() {
 
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
 
     async function handleRecoverPassword(e) {
         e.preventDefault();
 
         const data = {
-            email,
+            username,
+            password,
+            confirmPassword,
         };
 
-        try {
-            const response = await api.post('recoverPassword', data);
-
-            alert(`Foi enviado um e-mail para a realizar o reset da senha, siga as instruções! ${response.data.id}`);
-
-        } catch (error) {
-            alert('Erro na recuperação de senha, tente novamente mais tarde.');
-        }
+        if (this.password.value === this.confirmPassword.value){
+            try {
+                const response = await api.post('recoverPassword', data);
+    
+                alert(`Sua senha foi alterada com sucesso ${response.data.username}`);
+    
+            } catch (error) {
+                alert('Erro na recuperação de senha, tente novamente mais tarde.');
+            }
+        } else {
+            alert('Senhas digitadas não conferem');
+        }         
 
     }
     return (
@@ -35,7 +44,7 @@ export default function RecoverPassword() {
                 <section>
                     <img src={travelLogoImg} alt="Logo Travel System" />
                     <h1>Recuperação de Senha</h1>
-                    <p>Para recuperar a sua senha, informe o e-mail cadastrado.</p>
+                    <p>Insira a nova senha para o usuário</p>
 
                     <Link className="back-link" to="/">
                         <FiArrowLeft size={16} color="#E02041" />
@@ -46,11 +55,30 @@ export default function RecoverPassword() {
                 <form onSubmit={handleRecoverPassword}>
                     <input
                         type = "email"
-                        placeholder="Informe seu e-mail"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        placeholder="Email Cadastrado"
+                        value={username}
+                        disabled
+                        onChange={e => setUsername(e.target.value)}
                     />
-                    <button className="button" type="submit">Recuperar Senha</button>
+                    <input
+                        type = "password"
+                        value={password}
+                        placeholder="Nova Senha"
+                        required
+                        pattern="[0-9a-zA-Z]{8,32}"
+                        title="Digite uma senha com letras e números, mínimo de 8 caracteres."
+                        onChange={e => setPassword(e.target.value)}
+                    />
+                    <input
+                        type = "password"
+                        value={confirmPassword}
+                        placeholder="Confirme a senha"
+                        required
+                        pattern="[0-9a-zA-Z]{8,32}"
+                        title="Digite uma senha com letras e números, mínimo de 8 caracteres."
+                        onChange={e => setConfirmPassword(e.target.value)}
+                    />
+                    <button className="button" type="submit">Alterar Senha</button>
                 </form>
             </div>
 

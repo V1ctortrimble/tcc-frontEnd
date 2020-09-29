@@ -44,6 +44,7 @@ export default function Login() {
                 <form onSubmit={handleLogin}>
                     <h1>Faça seu login</h1>
                     <input placeholder="E-mail"
+                        type="email"
                         value={username}
                         onChange={e => setUsername(e.target.value)}
                     />
@@ -53,7 +54,7 @@ export default function Login() {
                         onChange={e => setPassword(e.target.value)}
                     />
                     <button className="button" type="submit">Entrar</button>
-                    <Link className="back-link" to="/recoverPassword">
+                    <Link className="back-link" to="/forgetPassword">
                         <FiKey size={16} color="#E02041" />
                     Recuperar a senha
                 </Link>
