@@ -22,8 +22,8 @@ export default function RecoverPassword() {
             password,
             confirmPassword,
         };
-
-        if (password.value === confirmPassword.value){
+        console.log(password, confirmPassword)
+        if (password === confirmPassword){
             try {
                 const response = await api.post('recoverPassword', data);
     
