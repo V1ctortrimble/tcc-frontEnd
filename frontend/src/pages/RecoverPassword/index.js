@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 
 import api from '../../services/api';
@@ -13,6 +13,8 @@ export default function RecoverPassword() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
+    const history = useHistory();
+
 
     async function handleRecoverPassword(e) {
         e.preventDefault();
@@ -22,12 +24,14 @@ export default function RecoverPassword() {
             password,
             confirmPassword,
         };
-        
+        console.log(password, confirmPassword)
         if (password === confirmPassword){
             try {
                 const response = await api.post('recoverPassword', data);
     
                 alert(`Sua senha foi alterada com sucesso ${response.data.username}`);
+
+                history.push("/");
     
             } catch (error) {
                 alert('Erro na recuperação de senha, tente novamente mais tarde.');
@@ -65,7 +69,7 @@ export default function RecoverPassword() {
                         value={password}
                         placeholder="Nova Senha"
                         required
-                        pattern="[0-9a-zA-Z]{8,32}"
+                        pattern="^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]{8,}$"
                         title="Digite uma senha com letras e números, mínimo de 8 caracteres."
                         onChange={e => setPassword(e.target.value)}
                     />
@@ -74,7 +78,7 @@ export default function RecoverPassword() {
                         value={confirmPassword}
                         placeholder="Confirme a senha"
                         required
-                        pattern="[0-9a-zA-Z]{8,32}"
+                        pattern="^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]{8,}$"
                         title="Digite uma senha com letras e números, mínimo de 8 caracteres."
                         onChange={e => setConfirmPassword(e.target.value)}
                     />
