@@ -69,8 +69,8 @@ export default function RecoverPassword() {
                         value={password}
                         placeholder="Nova Senha"
                         required
-                        pattern="^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]{8,}$"
-                        title="Digite uma senha com letras e números, mínimo de 8 caracteres."
+                        pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$"
+                        title="Digite uma senha com letras, números e caracteres especiais (#@$!), mínimo de 8 caracteres."
                         onChange={e => setPassword(e.target.value)}
                     />
                     <input
@@ -78,8 +78,8 @@ export default function RecoverPassword() {
                         value={confirmPassword}
                         placeholder="Confirme a senha"
                         required
-                        pattern="^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]{8,}$"
-                        title="Digite uma senha com letras e números, mínimo de 8 caracteres."
+                        pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$"
+                        title="Digite uma senha com letras, números e caracteres especiais (#@$!), mínimo de 8 caracteres."
                         onChange={e => setConfirmPassword(e.target.value)}
                     />
                     <button className="button" type="submit">Alterar Senha</button>
