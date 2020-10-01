@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 
 import api from '../../services/api';
@@ -8,13 +8,33 @@ import './styles.css';
 import travelLogoImg from '../../assets/TravelLogo.png';
 
 export default function RecoverPassword() {
-
+    let { code } = useParams();
+   
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [repeat_password, setRepeatPassword] = useState('');
 
     const history = useHistory();
 
+    window.onload = loadPage();
+
+    async function loadPage() {
+
+        if (code != null) {
+            try {
+                const response = await api.get(`api/recoverypassword/${code}`)
+
+                setUsername(response.data.username);
+
+                console.log(username);
+               
+            } catch (error) {
+                alert('Erro na recuperação de senha, tente novamente mais tarde.');
+            }
+        } else {
+            alert('Você não possui um código válido, faavor realizar o processo de recupera senha novamente');
+        }
+    }
 
     async function handleRecoverPassword(e) {
         e.preventDefault();
@@ -22,23 +42,26 @@ export default function RecoverPassword() {
         const data = {
             username,
             password,
-            confirmPassword,
+            repeat_password,
+            code,
         };
-        console.log(password, confirmPassword)
-        if (password === confirmPassword){
+
+        console.log(data);
+
+        if (password === repeat_password) {
             try {
-                const response = await api.post('recoverPassword', data);
-    
-                alert(`Sua senha foi alterada com sucesso ${response.data.username}`);
+                const response = await api.put('/api/changepassword', data);
+
+                alert(`${response.data.username}, Sua senha foi alterada com sucesso`);
 
                 history.push("/");
-    
+
             } catch (error) {
                 alert('Erro na recuperação de senha, tente novamente mais tarde.');
             }
         } else {
             alert('Senhas digitadas não conferem');
-        }         
+        }
 
     }
     return (
@@ -58,29 +81,29 @@ export default function RecoverPassword() {
                 </section>
                 <form onSubmit={handleRecoverPassword}>
                     <input
-                        type = "email"
+                        type="email"
                         placeholder="Email Cadastrado"
                         value={username}
                         disabled
                         onChange={e => setUsername(e.target.value)}
                     />
                     <input
-                        type = "password"
+                        type="password"
                         value={password}
                         placeholder="Nova Senha"
                         required
                         pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$"
-                        title="Digite uma senha com letras, números e caracteres especiais (#@$!), mínimo de 8 caracteres."
+                        title="Digite uma senha com letras (Maiuscula e Minuscula), números e caracteres especiais (#@$!), mínimo de 8 caracteres."
                         onChange={e => setPassword(e.target.value)}
                     />
                     <input
-                        type = "password"
-                        value={confirmPassword}
+                        type="password"
+                        value={repeat_password}
                         placeholder="Confirme a senha"
                         required
                         pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$"
-                        title="Digite uma senha com letras, números e caracteres especiais (#@$!), mínimo de 8 caracteres."
-                        onChange={e => setConfirmPassword(e.target.value)}
+                        title="Digite uma senha com letras (Maiuscula e Minuscula), números e caracteres especiais (#@$!), mínimo de 8 caracteres."
+                        onChange={e => setRepeatPassword(e.target.value)}
                     />
                     <button className="button" type="submit">Alterar Senha</button>
                 </form>

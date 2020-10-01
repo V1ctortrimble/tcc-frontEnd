@@ -19,32 +19,16 @@ import React from "react";
 import ReactDOM from "react-dom";
 import './global.css'
 
-import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
+import App from "./App";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./assets/css/animate.min.css";
 import "./assets/sass/light-bootstrap-dashboard-react.scss?v=1.3.0";
 import "./assets/css/demo.css";
 import "./assets/css/pe-icon-7-stroke.css";
-import Home from './pages/Home';
-import PrivateRoute from './PrivateRoute';
-import Login from './pages/Login';
-import RecoverPassword from './pages/RecoverPassword';
-import ForgetPassword from './pages/ForgetPassword';
 
-import AdminLayout from "layouts/Admin.jsx";
 
 ReactDOM.render(
-  <BrowserRouter>
-    <Switch>
-      <PrivateRoute path="/home" exact component={Home} />
-      <Route path="/forgetPassword" exact component={ForgetPassword} />
-      <Route path="/recoverPassword" exact component={RecoverPassword} />
-      <PrivateRoute path="/admin" render={props => <AdminLayout {...props} />} />
-      <Route path="/" exact component={Login} />
-
-      <Redirect from="/" to="/admin/dashboard" />
-    </Switch>
-  </BrowserRouter>,
+  <App />,
   document.getElementById("root")
 );
