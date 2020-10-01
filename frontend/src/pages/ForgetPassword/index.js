@@ -9,23 +9,23 @@ import travelLogoImg from '../../assets/TravelLogo.png';
 
 export default function RecoverPassword() {
 
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
 
     async function handleRecoverPassword(e) {
         e.preventDefault();
 
         const data = {
-            email,
+            username,
         };
 
         try {
-            const response = await api.post('forgetPassword', data);
-
-            alert(`Foi enviado um e-mail para a realizar o reset da senha, siga as instruções! ${response.data.id}`);
+            api.post('/api/sendemail', data);
 
         } catch (error) {
             alert('Erro na recuperação de senha, tente novamente mais tarde.');
         }
+
+        alert(`Foi enviado um e-mail para a realizar o reset da senha, siga as instruçõesno e-mail ${username}` );
 
     }
     return (
@@ -47,8 +47,8 @@ export default function RecoverPassword() {
                     <input
                         type = "email"
                         placeholder="Informe seu e-mail"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        value={username}
+                        onChange={e => setUsername(e.target.value)}
                     />
                     <button className="button" type="submit">Recuperar Senha</button>
                 </form>
