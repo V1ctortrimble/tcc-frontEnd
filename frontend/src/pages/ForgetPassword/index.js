@@ -25,7 +25,7 @@ export default function RecoverPassword() {
             alert('Erro na recuperação de senha, tente novamente mais tarde.');
         }
 
-        alert(`Foi enviado um e-mail para a realizar o reset da senha, siga as instruçõesno e-mail ${username}` );
+        alert(`Verifique seu e-mail se recebeu o código para troca de senha!` );
 
     }
     return (

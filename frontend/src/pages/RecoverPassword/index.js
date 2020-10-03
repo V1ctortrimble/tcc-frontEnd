@@ -50,9 +50,9 @@ export default function RecoverPassword() {
 
         if (password === repeat_password) {
             try {
-                const response = await api.put('/api/changepassword', data);
+                await api.put('/api/changepassword', data);
 
-                alert(`${response.data.username}, Sua senha foi alterada com sucesso`);
+                alert(`Sua senha foi alterada com sucesso`);
 
                 history.push("/");
 
