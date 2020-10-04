@@ -28,7 +28,7 @@ import { style } from "variables/Variables.jsx";
 
 import routes from "routes.js";
 
-import image from "assets/img/sidebar-3.jpg";
+import image from "assets/img/sidebar-4.jpg";
 
 class Admin extends Component {
   constructor(props) {

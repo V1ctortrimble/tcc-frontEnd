@@ -9,24 +9,36 @@ import travelLogoImg from '../../assets/TravelLogo.png';
 
 export default function RecoverPassword() {
 
-    const [email, setEmail] = useState('');
+    const divStyleHidden = {
+        display: 'none',
+    }
+
+    const divStyleShow = {
+        display: 'block',
+    }
+
+    const [username, setUsername] = useState('');
+
+    const [confirm, setConfirm] = useState(divStyleHidden);
+
+    const [error, setError] = useState(divStyleHidden);
 
     async function handleRecoverPassword(e) {
         e.preventDefault();
 
         const data = {
-            email,
+            username,
         };
 
         try {
-            const response = await api.post('forgetPassword', data);
-
-            alert(`Foi enviado um e-mail para a realizar o reset da senha, siga as instruções! ${response.data.id}`);
+            await api.post('/api/sendemail', data);
+            setConfirm(divStyleShow);
+            setError(divStyleHidden);
 
         } catch (error) {
-            alert('Erro na recuperação de senha, tente novamente mais tarde.');
+            setError(divStyleShow);
+            setConfirm(divStyleHidden);
         }
-
     }
     return (
         <div className="recoverPassword-container">
@@ -47,10 +59,12 @@ export default function RecoverPassword() {
                     <input
                         type = "email"
                         placeholder="Informe seu e-mail"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        value={username}
+                        onChange={e => setUsername(e.target.value)}
                     />
                     <button className="button" type="submit">Recuperar Senha</button>
+                    <div className="divTextConfirm" style={confirm}><h5>Verifique seu e-mail, se recebeu o código para troca de senha!</h5></div>
+                    <div className="divTextError" style={error}><h5>Erro na recuperação de senha, tente novamente mais tarde!</h5></div>
                 </form>
             </div>
 
