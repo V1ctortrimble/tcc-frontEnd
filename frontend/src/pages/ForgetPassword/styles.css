@@ -49,3 +49,15 @@
 .recoverPassword-container .content form input {
     margin-top: 8px;
 }
+
+.recoverPassword-container .divTextConfirm {
+    color: #008000;
+    text-align: center;
+    align-items: center;
+}
+
+.recoverPassword-container .divTextError {
+    color: #FF0000;
+    text-align: center;
+    align-items: center;
+}

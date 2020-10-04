@@ -9,10 +9,23 @@ import travelLogoImg from '../../assets/TravelLogo.png';
 
 export default function RecoverPassword() {
     let { code } = useParams();
-   
+
+    const divStyleHidden = {
+        display: 'none',
+    }
+
+    const divStyleShow = {
+        display: 'block',
+    }
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [repeat_password, setRepeatPassword] = useState('');
+
+    const [confirm, setConfirm] = useState(divStyleHidden);
+    const [error, setError] = useState(divStyleHidden);
+    const [errorPassword, setErrorPassword] = useState(divStyleHidden);
+    const [errorCod, setErrorCod] = useState(divStyleHidden);
 
     const history = useHistory();
 
@@ -27,12 +40,15 @@ export default function RecoverPassword() {
                 setUsername(response.data.username);
 
                 console.log(username);
-               
+
             } catch (error) {
-                alert('Erro na recuperação de senha, tente novamente mais tarde.');
+                setConfirm(divStyleHidden);
+                setError(divStyleShow);
             }
         } else {
-            alert('Você não possui um código válido, faavor realizar o processo de recupera senha novamente');
+            setErrorCod(divStyleShow);
+            setConfirm(divStyleHidden);
+            setError(divStyleHidden);
         }
     }
 
@@ -52,15 +68,18 @@ export default function RecoverPassword() {
             try {
                 await api.put('/api/changepassword', data);
 
-                alert(`Sua senha foi alterada com sucesso`);
+                setConfirm(divStyleShow);
+                setError(divStyleHidden);
 
-                history.push("/");
+                setTimeout(() => history.push("/"), 2000);
 
             } catch (error) {
-                alert('Erro na recuperação de senha, tente novamente mais tarde.');
+                setConfirm(divStyleHidden);
+                setError(divStyleShow);
             }
         } else {
-            alert('Senhas digitadas não conferem');
+            setErrorPassword(divStyleShow);
+            setConfirm(divStyleHidden);
         }
 
     }
@@ -72,14 +91,16 @@ export default function RecoverPassword() {
                     <img src={travelLogoImg} alt="Logo Travel System" />
                     <h1>Recuperação de Senha</h1>
                     <p>Insira a nova senha para o usuário</p>
-
                     <Link className="back-link" to="/">
                         <FiArrowLeft size={16} color="#E02041" />
                     Voltar para a página de Login
                 </Link>
-
                 </section>
                 <form onSubmit={handleRecoverPassword}>
+                <div className="divTextConfirm" style={confirm}><h5>Sua senha foi alterada com sucesso!</h5></div>
+                <div className="divTextError" style={errorPassword}><h5>Senhas digitadas não conferem</h5></div>
+                <div className="divTextError" style={errorCod}><h5>Você não possui um código válido, faavor realizar o processo de recupera senha novamente</h5></div>
+                <div className="divTextError" style={error}><h5>Erro na troca de senha, tente novamente mais tarde!</h5></div>
                     <input
                         type="email"
                         placeholder="Email Cadastrado"
@@ -108,7 +129,6 @@ export default function RecoverPassword() {
                     <button className="button" type="submit">Alterar Senha</button>
                 </form>
             </div>
-
         </div>
     );
 }
