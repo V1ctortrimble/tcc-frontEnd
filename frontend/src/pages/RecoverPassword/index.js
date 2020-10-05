@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 
@@ -28,8 +28,11 @@ export default function RecoverPassword() {
     const [errorCod, setErrorCod] = useState(divStyleHidden);
 
     const history = useHistory();
-
-    window.onload = loadPage();
+    
+    useEffect(() => {
+        loadPage();
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    ;
 
     async function loadPage() {
 
@@ -61,8 +64,6 @@ export default function RecoverPassword() {
             repeat_password,
             code,
         };
-
-        console.log(data);
 
         if (password === repeat_password) {
             try {
