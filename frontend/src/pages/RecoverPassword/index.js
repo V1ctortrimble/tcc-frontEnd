@@ -35,7 +35,6 @@ export default function RecoverPassword() {
     ;
 
     async function loadPage() {
-
         if (code != null) {
             try {
                 const response = await api.get(`api/recoverypassword/${code}`)
@@ -46,10 +45,10 @@ export default function RecoverPassword() {
 
             } catch (error) {
                 setConfirm(divStyleHidden);
-                setError(divStyleShow);
+                setErrorCod(divStyleShow);
             }
         } else {
-            setErrorCod(divStyleShow);
+            setError(divStyleShow);
             setConfirm(divStyleHidden);
             setError(divStyleHidden);
         }
@@ -71,6 +70,8 @@ export default function RecoverPassword() {
 
                 setConfirm(divStyleShow);
                 setError(divStyleHidden);
+                setErrorPassword(divStyleHidden);
+                setErrorCod(divStyleHidden);
 
                 setTimeout(() => history.push("/"), 2000);
 
@@ -100,7 +101,7 @@ export default function RecoverPassword() {
                 <form onSubmit={handleRecoverPassword}>
                 <div className="divTextConfirm" style={confirm}><h5>Sua senha foi alterada com sucesso!</h5></div>
                 <div className="divTextError" style={errorPassword}><h5>Senhas digitadas não conferem</h5></div>
-                <div className="divTextError" style={errorCod}><h5>Você não possui um código válido, faavor realizar o processo de recupera senha novamente</h5></div>
+                <div className="divTextError" style={errorCod}><h5>Você não possui um código válido, favor realizar o processo de recuperação de senha novamente</h5></div>
                 <div className="divTextError" style={error}><h5>Erro na troca de senha, tente novamente mais tarde!</h5></div>
                     <input
                         type="email"
