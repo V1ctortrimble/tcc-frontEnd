@@ -23,8 +23,16 @@ import Icons from "views/Icons.jsx";
 import Maps from "views/Maps.jsx";
 import Notifications from "views/Notifications.jsx";
 import Upgrade from "views/Upgrade.jsx";
+import SystemCompany from "pages/SystemCompany/SystemCompany.jsx"
 
 const dashboardRoutes = [
+  {
+    path: "/systemCompany",
+    name: "Empresa do Sistema",
+    icon: "pe-7s-culture",
+    component: SystemCompany,
+    layout: "/admin"
+  },
   {
     path: "/dashboard",
     name: "Dashboard",
