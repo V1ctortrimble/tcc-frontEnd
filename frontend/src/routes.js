@@ -22,7 +22,9 @@ import Typography from "views/Typography.jsx";
 import Icons from "views/Icons.jsx";
 import Maps from "views/Maps.jsx";
 import Notifications from "views/Notifications.jsx";
-//import Upgrade from "views/Upgrade.jsx";
+import UserLister from "pages/UserRegistration/UserLister";
+import UserRegistration from "pages/UserRegistration/UserRegistration";
+//import UserLister from "views/UserLister.jsx";
 
 const dashboardRoutes = [
   {
@@ -30,6 +32,13 @@ const dashboardRoutes = [
     name: "Dashboard",
     icon: "pe-7s-graph",
     component: Dashboard,
+    layout: "/admin"
+  },
+ {
+    path: "/UserLister",
+    name: "Cadastro de Usuario",
+    icon: "pe-7s-users",
+    component: UserLister,
     layout: "/admin"
   },
   {
@@ -74,14 +83,19 @@ const dashboardRoutes = [
     component: Notifications,
     layout: "/admin"
   },
-  {/*
-    upgrade: true,
-    path: "/upgrade",
-    name: "Upgrade to PRO",
-    icon: "pe-7s-rocket",
-    component: Upgrade,
+  {
+    path: "/UserRegistration",
+    component: UserRegistration,
     layout: "/admin"
-  */}
+  }
+  // {/*
+  //   upgrade: true,
+  //   path: "/upgrade",
+  //   name: "Upgrade to PRO",
+  //   icon: "pe-7s-rocket",
+  //   component: Upgrade,
+  //   layout: "/admin"
+  // */}
 ];
 
 export default dashboardRoutes;

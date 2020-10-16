@@ -4,7 +4,7 @@ import './styles.css';
 export default function HomePage(){
     return (
         <div className="login-container">
-            <h1>Bem Vindo cavalo</h1>
+            <h1>Bem Vindo</h1>
         </div>   
     )
 }

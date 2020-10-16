@@ -30,7 +30,6 @@ import Home from './pages/Home';
 import PrivateRoute from './PrivateRoute';
 import Login from './pages/Login';
 import RecoverPassword from './pages/RecoverPassword';
-
 import AdminLayout from "layouts/Admin.jsx";
 
 ReactDOM.render(
