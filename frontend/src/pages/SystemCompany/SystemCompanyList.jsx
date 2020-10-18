@@ -1,10 +1,16 @@
 import React, { Component } from "react";
 import { Grid, Row, Col } from "react-bootstrap";
-import {Typography, Button, Table} from "antd";
+import { Button, Table} from "antd";
 import 'antd/dist/antd.css';
-import { iconsArray } from "variables/Variables.jsx";
+import {EditFilled} from '@ant-design/icons';
 
-const { Title } = Typography;
+//const [pager, setPager] = useState();
+
+/*setPager({
+current: 1,
+pageSize: 10,
+total: 100,
+});*/
 
 const columns = [
     {
@@ -26,7 +32,7 @@ const columns = [
       key: 'operation',
       fixed: 'right',
       width: 100,
-      render: () => <a href="/admin"><Button type="primary" size="small"><iconsArray className="pe-7s-pen"/></Button> </a>,
+      render: () => <a href="/admin"><Button type="primary" size="small"><EditFilled/></Button> </a>,
     },
   ];
 
@@ -44,17 +50,25 @@ const columns = [
   ];
 
 
-class SystemCompany extends Component {
-  render() {
-    return (
+class SystemCompanyList extends Component {
+  handleClick = () => {
+    this.props.history.push("/admin/systemCompany/SystemCompanyInsert.jsx")
+  }
+
+   render() {
+    return (  
       <div className="content">
         <Grid fluid>
           <Row>
             <Col md={12}>
-            <Title level={2}>Empresa do Sistema</Title> 
-            <Button type="primary">Novo</Button>
+            <Button onClick={this.handleClick} className="ant-btn-primary">Novo</Button>
             <p></p>
-            <Table columns={columns} dataSource={data} bordered scroll={{ x: 100 }} />
+            <Table columns={columns} dataSource={data} bordered scroll={{ x: 100 }} pagination={{
+            showTotal: total =>
+              `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
+            showQuickJumper: true,
+            showSizeChanger: true,
+          }}/>
             </Col>
           </Row>
         </Grid>
@@ -63,4 +77,4 @@ class SystemCompany extends Component {
   }
 }
 
-export default SystemCompany;
+export default SystemCompanyList;

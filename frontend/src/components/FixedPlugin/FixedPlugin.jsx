@@ -29,7 +29,7 @@ class FixedPlugin extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      classes: "dropdown show-dropdown open",
+      classes: "dropdown show-dropdown open6",
       bg_checked: true,
       bgImage: this.props.bgImage
     };
@@ -46,7 +46,7 @@ class FixedPlugin extends Component {
       <div className="fixed-plugin">
         <div id="fixedPluginClasses" className={this.props.fixedClasses}>
           <div onClick={this.handleClick}>
-            <i className="pe-7s-settings"/>
+            <i className="pe-7s-settings" style={{ fontSize: '30px', color: '#f00' }}/>
           </div>
           <ul className="dropdown-menu">
             <li className="header-title">Configuration</li>

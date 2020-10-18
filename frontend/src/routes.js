@@ -23,64 +23,81 @@ import Icons from "views/Icons.jsx";
 import Maps from "views/Maps.jsx";
 import Notifications from "views/Notifications.jsx";
 import Upgrade from "views/Upgrade.jsx";
-import SystemCompany from "pages/SystemCompany/SystemCompany.jsx"
+import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
+import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
 
 const dashboardRoutes = [
   {
-    path: "/systemCompany",
+    path: "/systemCompany/SystemCompanyList.jsx",
     name: "Empresa do Sistema",
     icon: "pe-7s-culture",
-    component: SystemCompany,
-    layout: "/admin"
+    component: SystemCompanyList,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
+  {
+    path: "/systemCompany/SystemCompanyInsert.jsx",
+    name: "Cadastro Empresa do Sistema",
+    icon: "pe-7s-culture",
+    component: SystemCompanyInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
   },
   {
     path: "/dashboard",
     name: "Dashboard",
     icon: "pe-7s-graph",
     component: Dashboard,
-    layout: "/admin"
+    layout: "/admin",
+    visibleOnMenu: true,
   },
   {
     path: "/user",
     name: "Cadastro de Usuário",
     icon: "pe-7s-user",
     component: UserProfile,
-    layout: "/admin"
+    layout: "/admin",
+    visibleOnMenu: true,
   },
   {
     path: "/table",
     name: "Table List",
     icon: "pe-7s-note2",
     component: TableList,
-    layout: "/admin"
+    layout: "/admin",
+    visibleOnMenu: true,
   },
   {
     path: "/typography",
     name: "Typography",
     icon: "pe-7s-news-paper",
     component: Typography,
-    layout: "/admin"
+    layout: "/admin",
+    visibleOnMenu: true,
   },
   {
     path: "/icons",
     name: "Icons",
     icon: "pe-7s-science",
     component: Icons,
-    layout: "/admin"
+    layout: "/admin",
+    visibleOnMenu: true,
   },
   {
     path: "/maps",
     name: "Maps",
     icon: "pe-7s-map-marker",
     component: Maps,
-    layout: "/admin"
+    layout: "/admin",
+    visibleOnMenu: true,
   },
   {
     path: "/notifications",
     name: "Notifications",
     icon: "pe-7s-bell",
     component: Notifications,
-    layout: "/admin"
+    layout: "/admin",
+    visibleOnMenu: true,
   },
   {
     upgrade: true,
@@ -88,8 +105,9 @@ const dashboardRoutes = [
     name: "Upgrade to PRO",
     icon: "pe-7s-rocket",
     component: Upgrade,
-    layout: "/admin"
-  }
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
 ];
 
 export default dashboardRoutes;
