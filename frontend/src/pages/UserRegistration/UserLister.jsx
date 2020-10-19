@@ -65,7 +65,7 @@ class UserLister extends Component {
         <Grid fluid>
           <Row>
             <Col md={12}>
-            <Title level={2}>Cadastro de Usuario</Title> 
+            <Title level={2}>Cadastro</Title> 
             <a href="/admin/UserRegistration"><Button type="primary">Novo</Button></a>
             <p></p>
             <Table columns={columns} dataSource={data} bordered scroll={{ x: 100 }}/>
