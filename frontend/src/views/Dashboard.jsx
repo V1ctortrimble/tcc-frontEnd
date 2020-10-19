@@ -53,7 +53,7 @@ class Dashboard extends Component {
           <Row>
             <Col lg={3} sm={6}>
               <StatsCard
-                bigIcon={<i className="pe-7s-server text-warning" />}
+                bigIcon={<i className="pe-7s-users text-warning" />}
                 statsText="Capacity"
                 statsValue="105GB"
                 statsIcon={<i className="fa fa-refresh" />}

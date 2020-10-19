@@ -27,6 +27,11 @@ import "./assets/sass/light-bootstrap-dashboard-react.scss?v=1.3.0";
 import "./assets/css/demo.css";
 import "./assets/css/pe-icon-7-stroke.css";
 
+import Home from './pages/Home';
+import PrivateRoute from './PrivateRoute';
+import Login from './pages/Login';
+import RecoverPassword from './pages/RecoverPassword';
+import AdminLayout from "layouts/Admin.jsx";
 
 ReactDOM.render(
   <App />,
