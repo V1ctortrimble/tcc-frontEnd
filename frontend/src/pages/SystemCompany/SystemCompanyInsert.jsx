@@ -108,11 +108,6 @@ const dataBank = [
 
 class SystemCompanyInsert extends Component {
 
-  componentDidMount() {
-    notification.success({
-      message: 'Página carregada com sucesso',
-    })
-  }
   state = {
     current: 0,
     loadingCep: false,
@@ -279,7 +274,7 @@ class SystemCompanyInsert extends Component {
       this.popularCamposEmpresaPost();
       console.log(this.dataCompany)
 
-      const response = await api.post('api/persons/company', this.state.dataCompany);
+      const response = await api.post('api/persons/company', this.dataCompany);
 
       console.log(response);
 
@@ -316,8 +311,10 @@ class SystemCompanyInsert extends Component {
   enderecoEmpresaCep = async () => {
     const cepIn = this.state.cep;
     if (cepIn.length !== 8) {
-      //message.error('CEP informado é inválido.');
-      console.log('CEP informado é inválido.');
+      notification.error({
+        message: 'CEP informado é inválido.',
+        description: 'Favor inserir um Cep, com 8 números'
+      });
       return;
     }
     this.setState({ loadingCep: true });
@@ -326,10 +323,6 @@ class SystemCompanyInsert extends Component {
 
       if (enderecoCompleto) {
         this.popularCamposEmpresaConsultaCep(enderecoCompleto);
-/*        notification.success({
-          message: 'Cep consultado corretamente',
-          description: 'Sucesso'
-        });*/
       }
       if (!enderecoCompleto.street) {
         notification.warning({
