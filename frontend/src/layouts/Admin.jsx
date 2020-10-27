@@ -41,8 +41,10 @@ class Admin extends Component {
       fixedClasses: "dropdown"
     };
   }
-  handleNotificationClick = position => {
-    var color = Math.floor(Math.random() * 4 + 1);
+  handleNotificationClick = (position, level, message, icon) => {
+    this.setState({ _notificationSystem: this.refs.notificationSystem });
+    var _notificationSystem = this.refs.notificationSystem;
+    /*var color = Math.floor(Math.random() * 4 + 1);
     var level;
     switch (color) {
       case 1:
@@ -59,18 +61,17 @@ class Admin extends Component {
         break;
       default:
         break;
-    }
-    this.state._notificationSystem.addNotification({
-      title: <span data-notify="icon" className="pe-7s-gift" />,
+    }*/
+    _notificationSystem.addNotification({
+      title: <span data-notify="icon" className={icon} />,
       message: (
         <div>
-          Welcome to <b>Light Bootstrap Dashboard</b> - a beautiful freebie for
-          every web developer.
+          {message}
         </div>
       ),
       level: level,
       position: position,
-      autoDismiss: 15
+      autoDismiss: 3
     });
   };
   getRoutes = routes => {
@@ -121,9 +122,9 @@ class Admin extends Component {
       this.setState({ fixedClasses: "dropdown" });
     }
   };
-  componentDidMount() {
+  /*componentDidMount() {
     this.setState({ _notificationSystem: this.refs.notificationSystem });
-    /*var _notificationSystem = this.refs.notificationSystem;
+    var _notificationSystem = this.refs.notificationSystem;
     var color = Math.floor(Math.random() * 4 + 1);
     var level;
     switch (color) {
@@ -142,7 +143,7 @@ class Admin extends Component {
       default:
         break;
     }
-    /*_notificationSystem.addNotification({
+    _notificationSystem.addNotification({
       title: <span data-notify="icon" className="pe-7s-gift" />,
       message: (
         <div>
@@ -153,8 +154,8 @@ class Admin extends Component {
       level: level,
       position: "tr",
       autoDismiss: 15
-    });*/
-  }
+    });
+  }*/
   componentDidUpdate(e) {
     if (
       window.innerWidth < 993 &&
