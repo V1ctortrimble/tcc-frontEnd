@@ -46,7 +46,7 @@ class FixedPlugin extends Component {
       <div className="fixed-plugin">
         <div id="fixedPluginClasses" className={this.props.fixedClasses}>
           <div onClick={this.handleClick}>
-            <i className="pe-7s-settings" style={{ fontSize: '30px', color: '#f00' }}/>
+            <i className="pe-7s-config"style={{ fontSize: '30px', color: '#fff', padding: '10px' }}/>
           </div>
           <ul className="dropdown-menu">
             <li className="header-title">Configuration</li>

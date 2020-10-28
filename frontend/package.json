@@ -19,6 +19,7 @@
     "react-dom": "^16.13.1",
     "react-google-maps": "9.4.5",
     "react-icons": "^3.11.0",
+    "react-input-mask": "^2.0.4",
     "react-notification-system": "0.2.17",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
