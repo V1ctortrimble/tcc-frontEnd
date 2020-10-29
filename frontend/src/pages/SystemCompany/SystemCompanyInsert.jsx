@@ -9,8 +9,7 @@ import cep from 'cep-promise';
 import api from '../../services/api';
 import NotificationSystem from "react-notification-system";
 import { style } from "variables/Variables.jsx";
-
-import { FormInputs } from "components/FormInputs/FormInputs.jsx";
+import {cpf, cnpj} from "cpf-cnpj-validator";
 
 const { Step } = Steps;
 
@@ -34,8 +33,8 @@ const columns = [
     key: 'operation',
     fixed: 'right',
     width: 100,
-    render: () => <div> <a href="/admin"><Button bsStyle="primary" fill bsSize="xsmall"><EditFilled /></Button> </a>
-      <a href="/admin"><Button bsStyle="primary" fill bsSize="xsmall"><EditFilled /></Button> </a>
+    render: () => <div> <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>
+      <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>
     </div>
   },
 ];
@@ -81,7 +80,7 @@ const columnsBank = [
     key: 'operation',
     fixed: 'right',
     width: 50,
-    render: () => <a href="/admin"><Button bsStyle="primary" fill round><EditFilled /></Button> </a>,
+    render: () => <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>,
   },
 ];
 
@@ -112,6 +111,9 @@ class SystemCompanyInsert extends Component {
     loadingAvancar: false,
     desabilitarEndBairro: true,
     desabilitarCamposEndereco: true,
+    desabilitarEndBairroSocio: true,
+    desabilitarCamposEnderecoSocio: true,
+    idEmpresa: "",
     cnpj: "",
     razaoSocial: "",
     nomeFantasia: "",
@@ -145,91 +147,49 @@ class SystemCompanyInsert extends Component {
     conta: "",
     digito: "",
     operacao: "",
-    dataCompany: {
-      active: true,
-      adresses: [
-        {
-          additional: "",
-          adress: "",
-          adress_number: "",
-          city: "",
-          neighborhood: "",
-          state: "",
-          zip_code: "",
-        }
-      ],
-      banks_details: [
-        {
-          account: "",
-          active: "",
-          agency: "",
-          bank: "",
-          digit: "",
-          operation: "",
-        }
-      ],
-      company: {
-        active: true,
-        cnpj: "",
-        fantasy_name: "",
-        open_date: "",
-        social_reason: "",
-        state_regis: "",
-      },
-      contacts: [
-        {
-          cell_phone: "",
-          email: "",
-          phone: "",
-        }
-      ]
-    }
   };
 
   dataCompany = {};
 
-  dataPartner = {
-    active: true,
-    adresses: [
-      {
-        additional: this.state.complementoSocio,
-        adress: this.state.enderecoSocio,
-        adress_number: this.state.numeroSocio,
-        city: this.state.cidadeSocio,
-        neighborhood: this.state.bairroSocio,
-        state: this.state.estadoSocio,
-        zip_code: this.cepSocio,
+  dataPartner = {};
+
+  dataBankDetails = {};
+
+  removeCaractEspecial(texto) {
+    return texto.replace(/[^a-zA-Z0-9]/g, '');
+  }
+
+  validaCpf(cpfValidar) {
+    const cpfLimpo = this.removeCaractEspecial(cpfValidar);
+    if (cpfLimpo.length === 11) {
+      if (cpf.isValid(cpfLimpo)) {
+      } else {
+        notification.error({
+          message: `CPF ${cpfValidar} é inválido, favor informar um CPF válido`,
+        });
+        this.setState({cpf: ""});
       }
-    ],
-    banks_details: [
-      {
-        account: "123456",
-        active: true,
-        agency: "1679",
-        bank: "Itau",
-        digit: "5",
-        operation: ""
-      }
-    ],
-    contacts: [
-      {
-        cell_phone: this.state.celularSocio,
-        email: this.state.emailSocio,
-        phone: this.state.telefoneSocio
-      }
-    ],
-    individual: {
-      birth_date: this.state.dataNascSocio,
-      cpf: this.state.cpf,
-      last_name: this.state.sobreNome,
-      name_individual: this.state.nome,
-      rg: this.state.rg
     }
-  };
+  }
+
+  validaCnpj(cnpjValidar) {
+    const cnpjLimpo = this.removeCaractEspecial(cnpjValidar);
+    console.log(cnpjLimpo)
+    if (cnpjLimpo.length === 14) {
+      if (cnpj.isValid(cnpjLimpo)) {
+      } else {
+        notification.error({
+          message: `CNPJ ${cnpjValidar} é inválido, favor informar um CNPJ válido`,
+        });
+        this.setState({cnpj: ""});
+      }
+    }
+  }
 
   saveCompany = async (e) => {
 
     e.preventDefault();
+    this.setState({ loadingAvancar: true })
 
     try {
       this.popularCamposEmpresaPost();
@@ -248,29 +208,58 @@ class SystemCompanyInsert extends Component {
       notification.error({
         message: 'Não foi possível Salvar Empresa'
       });
+    } finally {
+      this.setState({ loadingAvancar: false })
     }
   };
 
   savePartner = async (e) => {
     e.preventDefault();
+    this.setState({ loadingAvancar: true })
 
     try {
+      this.popularCamposSocioPost();
+      console.log(this.dataPartner);
       const response = await api.post('api/persons/individual', this.dataPartner);
-
       console.log(response);
-
+      notification.success({
+        message: `Socio adicionado com sucesso`,
+      });
+      this.limpaCamposSocio();
     }
     catch (error) {
       notification.error({
         message: 'Não foi possível Salvar Sócio'
       });
+      console.log(error)
+    } finally {
+      this.setState({ loadingAvancar: false })
+    }
+  }
+
+  saveBankDetails = async (e) => {
+    e.preventDefault();
+    this.setState({ loadingAvancar: true });
+
+    try {
+      this.popularCamposBancoPost();
+      const response = await api.post('api/persons/bankDetails', this.dataBankDetails);
+      console.log(response);
+      notification.success({
+        message: `Dados Bancários adicionado com sucesso`,
+      });
+    }
+    catch (error) {
+      notification.error({
+        message: 'Não foi possível Salvar dados Bancários'
+      });
+    } finally {
+      this.setState({ loadingAvancar: false })
     }
   }
 
   enderecoEmpresaCep = async () => {
-    this.setState({cep: this.state.cep.replace('-','')});
-    const cepIn = this.state.cep.replace('-','');
-    console.log(cepIn);
+    const cepIn = this.removeCaractEspecial(this.state.cep);
     this.setState({
       desabilitarCamposEndereco: true,
       desabilitarEndBairro: true
@@ -284,7 +273,7 @@ class SystemCompanyInsert extends Component {
     }
     this.setState({ loadingCep: true });
     try {
-      const enderecoCompleto = await cep(`${cepIn.replace(/[^a-zA-Z0-9]/g, '')}`);
+      const enderecoCompleto = await cep(cepIn);
 
       if (enderecoCompleto) {
         this.popularCamposEmpresaConsultaCep(enderecoCompleto);
@@ -311,10 +300,49 @@ class SystemCompanyInsert extends Component {
     }
   };
 
+  enderecoSocioCep = async () => {
+    const cepIn = this.removeCaractEspecial(this.state.cepSocio);
+    this.setState({
+      desabilitarCamposEnderecoSocio: true,
+      desabilitarEndBairroSocio: true
+    })
+    if (cepIn.length !== 8) {
+      notification.error({
+        message: 'CEP informado é inválido.',
+        description: 'Favor inserir um Cep, com 8 números'
+      });
+      return;
+    }
+    this.setState({ loadingCep: true });
+    try {
+      const enderecoCompleto = await cep(cepIn);
+
+      if (enderecoCompleto) {
+        this.popularCamposSocioConsultaCep(enderecoCompleto);
+      }
+      if (!enderecoCompleto.street) {
+        notification.warning({
+          message: 'Cep consultado com avisos',
+          description: 'Cep geral, favor inserir Endereço e Bairro'
+        });
+        this.setState({ desabilitarEndBairroSocio: false })
+      }
+    } catch (error) {
+      console.log(error);
+      notification.error({
+        message: 'Falha ao consultar CEP',
+        description: 'Insira o endereço manualmente'
+      });
+      this.setState({
+        desabilitarCamposEnderecoSocio: false,
+        desabilitarEndBairroSocio: false
+      })
+    } finally {
+      this.setState({ loadingCep: false })
+    }
+  };
+
   popularCamposEmpresaPost() {
-    const cnpjNorm = this.state.cnpj.replace(/[^a-zA-Z0-9]/g,'');
-    const cellPhoneNorm = this.state.celular.replace(/[^a-zA-Z0-9]/g,'')
-    const phoneNorm = this.state.telefone.replace(/[^a-zA-Z0-9]/g,'')
     this.dataCompany = {
       active: true,
       adresses: [
@@ -330,7 +358,7 @@ class SystemCompanyInsert extends Component {
       ],
       company: {
         active: true,
-        cnpj: cnpjNorm,
+        cnpj: this.removeCaractEspecial(this.state.cnpj),
         fantasy_name: this.state.nomeFantasia,
         open_date: "",
         social_reason: this.state.razaoSocial,
@@ -338,12 +366,60 @@ class SystemCompanyInsert extends Component {
       },
       contacts: [
         {
-          cell_phone: cellPhoneNorm,
+          cell_phone: this.removeCaractEspecial(this.state.celular),
           email: this.state.email,
-          phone: phoneNorm,
+          phone: this.removeCaractEspecial(this.state.telefone),
         }
       ]
     };
+  }
+
+  popularCamposSocioPost() {
+
+    this.dataPartner = {
+      active: true,
+      adresses: [
+        {
+          additional: this.state.complementoSocio,
+          adress: this.state.enderecoSocio,
+          adress_number: this.state.numeroSocio,
+          city: this.state.cidadeSocio,
+          neighborhood: this.state.bairroSocio,
+          state: this.state.estadoSocio,
+          zip_code: this.removeCaractEspecial(this.state.cepSocio),
+        }
+      ],
+      contacts: [
+        {
+          cell_phone: this.removeCaractEspecial(this.state.celularSocio),
+          email: this.state.emailSocio,
+          phone: this.removeCaractEspecial(this.state.telefoneSocio)
+        }
+      ],
+      individual: {
+        birth_date: this.state.dataNascSocio,
+        cpf: this.removeCaractEspecial(this.state.cpf),
+        last_name: this.state.sobreNome,
+        name_individual: this.state.nome,
+        rg: this.state.rg
+      }
+    }
+  };
+
+  popularCamposBancoPost() {
+    this.dataBankDetails = {
+      idPerson: this.state.idEmpresa,
+      bankDetails: [
+        {
+          active: true,
+          bank: this.state.banco,
+          agency: this.state.agencia,
+          account: this.state.conta,
+          digit: this.state.digito,
+          operation: this.state.operacao,
+        }
+      ]
+    }
   }
 
   popularCamposEmpresaConsultaCep = (data) => {
@@ -355,9 +431,32 @@ class SystemCompanyInsert extends Component {
     })
   };
 
-  popularCamposSocioEndereco = (data) => {
+  popularCamposSocioConsultaCep = (data) => {
     this.setState({
-      endereco: data.street,
+      enderecoSocio: data.street,
+      bairroSocio: data.neighborhood,
+      cidadeSocio: data.city,
+      estadoSocio: data.state
+    })
+  }
+
+  limpaCamposSocio() {
+    this.setState({
+      cpf: "",
+      nome: "",
+      sobreNome: "",
+      rg: "",
+      dataNascSocio: "",
+      telefoneSocio: "",
+      celularSocio: "",
+      emailSocio: "",
+      cepSocio: "",
+      enderecoSocio: "",
+      numeroSocio: "",
+      complementoSocio: "",
+      bairroSocio: "",
+      cidadeSocio: "",
+      estadoSocio: ""
     })
   }
 
@@ -415,12 +514,11 @@ class SystemCompanyInsert extends Component {
               <Row>
                 <Col md={12}>
                   <form name="formEmpresa" onSubmit={this.saveCompany}>
-                    {JSON.stringify(this.state)}
                     <Row>
                       <div className="col-md-2">
                         <ControlLabel>CNPJ</ControlLabel>
-                        <InputMask mask="99.999.999/9999-99" name="cnpj" value={this.state.cnpj.replace(/[^a-zA-Z0-9]/g,'')}
-                          type="text" className="form-control"
+                        <InputMask mask="99.999.999/9999-99" name="cnpj" value={this.state.cnpj}
+                          type="text" className="form-control" onBlur={this.validaCnpj(this.state.cnpj)}
                           placeholder="00.000.000/0000-00" required onChange={this.onChange} />
                       </div>
                       <div className="col-md-5">
@@ -452,7 +550,7 @@ class SystemCompanyInsert extends Component {
                       <div className="col-md-3">
                         <ControlLabel>Email</ControlLabel>
                         <input name="email" value={this.state.email}
-                          type="email" className="form-control"
+                          type="email" className="form-control" required
                           placeholder="xxxxxx@xxxxx.xxx.xx" onChange={this.onChange} />
                       </div>
                     </Row>
@@ -462,10 +560,10 @@ class SystemCompanyInsert extends Component {
                         <ControlLabel>CEP</ControlLabel>
                         <InputMask name="cep" className="form-control" value={this.state.cep}
                           placeholder="00000-000" type="text" mask="99999-999"
-                          required onChange={this.onChange}/>
+                          required onChange={this.onChange} />
                       </div>
-                      <div className="col-md-2" style={{marginTop: '34px', marginBottom: '34px'}}>
-                        <Button style={{height: '35%'}} onClick={this.enderecoEmpresaCep} size="large"
+                      <div className="col-md-2" style={{ marginTop: '38px', marginBottom: '38px' }}>
+                        <Button style={{ height: '35%' }} onClick={this.enderecoEmpresaCep} size="middle"
                           type="primary" loading={this.state.loadingCep}>Consultar Cep</Button>
                       </div>
                     </Row>
@@ -515,12 +613,12 @@ class SystemCompanyInsert extends Component {
                     </Row>
                     <div className="ant-row ant-row-end">
                       <div className="ant-col">
-                        <Button size="large" pullRight onClick={this.toBackList}>
+                        <Button size="middle" onClick={this.toBackList}>
                           Voltar
                     </Button>
                       </div>
                       <div className="ant-col">
-                        <Button type="primary" htmlType="submit" size="large" pullRight fill loading={this.state.loadingAvancar}>
+                        <Button type="primary" htmlType="submit" size="middle" loading={this.state.loadingAvancar}>
                           Avançar
                     </Button>
                       </div>
@@ -533,190 +631,120 @@ class SystemCompanyInsert extends Component {
             {(current === 1) ?
               <Row>
                 <Col md={12}>
-                  <form name="formSocio">
-                    <FormInputs ncols={["col-md-3", "col-md-3", "col-md-3", "col-md-3"]}
-                      properties={[
-                        {
-                          name: "cpf",
-                          value: this.state.cpf,
-                          label: "CPF",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "000.000.000-00",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "nome",
-                          value: this.state.nome,
-                          label: "Nome",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "José",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "sobreNome",
-                          value: this.state.sobreNome,
-                          label: "Sobrenome",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "da Silva",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "rg",
-                          value: this.state.rg,
-                          label: "RG",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "00000000",
-                          required: true,
-                          onChange: this.onChange,
-                        }
-                      ]} />
-                    <FormInputs
-                      ncols={["col-md-2", "col-md-2", "col-md-2", "col-md-3"]}
-                      properties={[
-                        {
-                          name: "dataNascSocio",
-                          value: this.state.dataNascSocio,
-                          label: "Data Nascimento",
-                          type: "date",
-                          bsClass: "form-control",
-                          placeholder: "XX/XX/XXXX",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "telefoneSocio",
-                          value: this.state.telefoneSocio,
-                          label: "Telefone",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "(XX) XXXX-XXXX",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "celularSocio",
-                          value: this.state.celularSocio,
-                          label: "Celular",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "(XX) XXXX-XXXX",
-                          required: false,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "emailSocio",
-                          value: this.state.emailSocio,
-                          label: "Email",
-                          type: "email",
-                          bsClass: "form-control",
-                          placeholder: "Nome xxxxxx@xxxxx.com",
-                          required: false,
-                          onChange: this.onChange,
-                        }
-                      ]}
-                    />
-                    <FormInputs
-                      ncols={["col-md-3"]}
-                      properties={[
-                        {
-                          name: "cepSocio",
-                          value: this.state.cepSocio,
-                          label: "CEP",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "00000-000",
-                          maxLength: 8,
-                          required: true,
-                          onChange: this.onChange,
-                        }
-                      ]}
-                    />
-                    <Button bsStyle="info" fill onClick={this.consultaCEP}>
-                      Consulta CEP
-                    </Button>
-                    <FormInputs
-                      ncols={["col-md-6", "col-md-3", "col-md-3"]}
-                      properties={[
-                        {
-                          name: "enderecoSocio",
-                          value: this.state.enderecoSocio,
-                          label: "Endereço",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Rua xxxxxxxxxxx",
-                          disabled: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "numeroSocio",
-                          value: this.state.numeroSocio,
-                          label: "Número",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "123",
-                          disabled: false,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "complementoSocio",
-                          value: this.state.complementoSocio,
-                          label: "Complemento",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Bloco A",
-                          disabled: false,
-                          onChange: this.onChange,
-                        }
-                      ]}
-                    />
-                    <FormInputs
-                      ncols={["col-md-4", "col-md-4", "col-md-4"]}
-                      properties={[
-                        {
-                          name: "bairroSocio",
-                          value: this.state.bairroSocio,
-                          label: "Bairro",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Jardim Aurora",
-                          disabled: true,
-                          onChange: this.onChange,
-
-                        },
-                        {
-                          name: "cidadeSocio",
-                          value: this.state.cidadeSocio,
-                          label: "Cidade",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Londrina",
-                          disabled: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "estadoSocio",
-                          value: this.state.estadoSocio,
-                          label: "Estado",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Paraná",
-                          disabled: true,
-                          onChange: this.onChange,
-                        }
-                      ]}
-                    />
+                  <form name="formSocio" onSubmit={this.savePartner}>
+                    <Row>
+                      <div className="col-md-3">
+                        <ControlLabel>CPF</ControlLabel>
+                        <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
+                          type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
+                          placeholder="999.999.999-99" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-3">
+                        <ControlLabel>Nome</ControlLabel>
+                        <input name="nome" value={this.state.nome}
+                          type="text" className="form-control"
+                          placeholder="José" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-3">
+                        <ControlLabel>Sobrenome</ControlLabel>
+                        <input name="sobreNome" value={this.state.sobreNome}
+                          type="text" className="form-control"
+                          placeholder="da Silva" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-3">
+                        <ControlLabel>RG</ControlLabel>
+                        <input name="rg" value={this.state.rg}
+                          type="text" className="form-control"
+                          placeholder="00000000" required onChange={this.onChange} />
+                      </div>
+                    </Row>
+                    <Row>
+                      <div className="col-md-2">
+                        <ControlLabel>Data Nascimento</ControlLabel>
+                        <input name="dataNascSocio" value={this.state.dataNascSocio}
+                          type="date" className="form-control"
+                          placeholder="XX/XX/XXXX" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-2">
+                        <ControlLabel>Telefone</ControlLabel>
+                        <InputMask mask="(99) 9999-9999" name="telefoneSocio" value={this.state.telefoneSocio}
+                          type="text" className="form-control"
+                          placeholder="(XX) XXXX-XXXX" onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-2">
+                        <ControlLabel>Celular</ControlLabel>
+                        <InputMask mask="(99) 99999-9999" name="celularSocio" value={this.state.celularSocio}
+                          type="text" className="form-control"
+                          placeholder="(XX) XXXXX-XXXX" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-3">
+                        <ControlLabel>Email</ControlLabel>
+                        <input name="emailSocio" value={this.state.emailSocio}
+                          type="email" className="form-control"
+                          placeholder="xxxxxx@xxxxx.com" onChange={this.onChange} />
+                      </div>
+                    </Row>
+                    <Row>
+                      <div className="col-md-3">
+                        <ControlLabel>CEP</ControlLabel>
+                        <InputMask name="cepSocio" className="form-control" value={this.state.cepSocio}
+                          placeholder="00000-000" type="text" mask="99999-999"
+                          required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-2" style={{ marginTop: '38px', marginBottom: '38px' }}>
+                        <Button style={{ height: '35%' }} onClick={this.enderecoSocioCep} size="middle"
+                          type="primary" loading={this.state.loadingCep}>Consultar Cep</Button>
+                      </div>
+                    </Row>
+                    <Row>
+                      <div className="col-md-6">
+                        <ControlLabel>Endereço</ControlLabel>
+                        <input name="enderecoSocio" value={this.state.enderecoSocio}
+                          type="text" className="form-control"
+                          placeholder="Rua xxxxxxxxxxx" onChange={this.onChange}
+                          disabled={this.state.desabilitarEndBairroSocio} />
+                      </div>
+                      <div className="col-md-3">
+                        <ControlLabel>Número</ControlLabel>
+                        <input name="numeroSocio" value={this.state.numeroSocio}
+                          type="text" className="form-control"
+                          placeholder="123" onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-3">
+                        <ControlLabel>Complemento</ControlLabel>
+                        <input name="complementoSocio" value={this.state.complementoSocio}
+                          type="text" className="form-control"
+                          placeholder="Bloco A" onChange={this.onChange} />
+                      </div>
+                    </Row>
+                    <Row>
+                      <div className="col-md-4">
+                        <ControlLabel>Bairro</ControlLabel>
+                        <input name="bairroSocio" value={this.state.bairroSocio}
+                          type="text" className="form-control"
+                          placeholder="Jardim Aurora" onChange={this.onChange}
+                          disabled={this.state.desabilitarEndBairroSocio} />
+                      </div>
+                      <div className="col-md-4">
+                        <ControlLabel>Cidade</ControlLabel>
+                        <input name="cidadeSocio" value={this.state.cidadeSocio}
+                          type="text" className="form-control"
+                          placeholder="Londrina" onChange={this.onChange}
+                          disabled={this.state.desabilitarCamposEnderecoSocio} />
+                      </div>
+                      <div className="col-md-4">
+                        <ControlLabel>Estado</ControlLabel>
+                        <input name="estadoSocio" value={this.state.estadoSocio}
+                          type="text" className="form-control"
+                          placeholder="Paraná" onChange={this.onChange}
+                          disabled={this.state.desabilitarCamposEnderecoSocio} />
+                      </div>
+                    </Row>
                     <div className="ant-row ant-row-end">
                       <div className="ant-col">
-                        <Button bsStyle="primary" pullRight fill type="submit">
-                          Adicionar
-                    </Button>
+
+                        <Button size="middle" htmlType="submit"
+                          type="primary" loading={this.state.loadingAvancar}>Adicionar</Button>
                       </div>
                     </div>
                   </form>
@@ -730,16 +758,15 @@ class SystemCompanyInsert extends Component {
                   </div>
                   <div className="ant-row ant-row-end">
                     <div className="ant-col">
-                      <Button bsStyle="info" pullRight onClick={this.previousStep}>
+                      <Button type="info" size="middle" onClick={this.previousStep}>
                         Voltar
                     </Button>
                     </div>
                     <div className="ant-col">
-                      <Button bsStyle="primary" pullRight fill type="submit" onClick={this.nextStep}>
+                      <Button type="primary" size="middle" onClick={this.nextStep}>
                         Avançar
                     </Button>
                     </div>
-
                   </div>
                 </Col>
               </Row>
@@ -747,65 +774,44 @@ class SystemCompanyInsert extends Component {
             {(current === 2) ?
               <Row>
                 <Col md={12}>
-                  <form>
-                    <FormInputs ncols={["col-md-3", "col-md-2", "col-md-2", "col-md-1", "col-md-1"]}
-                      properties={[
-                        {
-                          name: "banco",
-                          value: this.state.banco,
-                          label: "Banco",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "Itau",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "agencia",
-                          value: this.state.agencia,
-                          label: "Agencia",
-                          type: "number",
-                          bsClass: "form-control",
-                          placeholder: "123456",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "conta",
-                          value: this.state.conta,
-                          label: "Conta",
-                          type: "number",
-                          bsClass: "form-control",
-                          placeholder: "654321",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "digito",
-                          value: this.state.digito,
-                          label: "Digito",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "0",
-                          required: true,
-                          onChange: this.onChange,
-                        },
-                        {
-                          name: "operacao",
-                          value: this.state.operacao,
-                          label: "Operação",
-                          type: "text",
-                          bsClass: "form-control",
-                          placeholder: "001",
-                          onChange: this.onChange,
-                        }
-                      ]}>
-                    </FormInputs>
+                  <form name="formDadosBanco" onSubmit={this.saveBankDetails}>
+                    <Row>
+                      <div className="col-md-3">
+                        <ControlLabel>Banco</ControlLabel>
+                        <input name="banco" value={this.state.banco}
+                          type="text" className="form-control"
+                          placeholder="Itau" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-2">
+                        <ControlLabel>Agência</ControlLabel>
+                        <input name="agencia" value={this.state.agencia}
+                          type="text" className="form-control"
+                          placeholder="123456" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-2">
+                        <ControlLabel>Conta</ControlLabel>
+                        <input name="conta" value={this.state.conta}
+                          type="text" className="form-control"
+                          placeholder="654321" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-1">
+                        <ControlLabel>Dígito</ControlLabel>
+                        <input name="digito" value={this.state.digito}
+                          type="text" className="form-control"
+                          placeholder="0" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-1">
+                        <ControlLabel>Operação</ControlLabel>
+                        <input name="operacao" value={this.state.operacao}
+                          type="text" className="form-control"
+                          placeholder="001" onChange={this.onChange} />
+                      </div>
+                    </Row>
                     <div className="ant-row ant-row-end">
                       <div className="ant-col">
-                        <Button bsStyle="primary" pullRight fill type="submit">
-                          Adicionar
-                        </Button>
+
+                        <Button size="middle" htmlType="submit"
+                          type="primary" loading={this.state.loadingAvancar}>Adicionar</Button>
                       </div>
                     </div>
                   </form>
@@ -819,12 +825,12 @@ class SystemCompanyInsert extends Component {
                   </div>
                   <div className="ant-row ant-row-end">
                     <div className="ant-col">
-                      <Button bsStyle="info" pullRight onClick={this.previousStep}>
+                      <Button type="info" size="middle" onClick={this.previousStep}>
                         Voltar
                     </Button>
                     </div>
                     <div className="ant-col">
-                      <Button bsStyle="primary" pullRight fill type="submit" onClick={this.toBackList}>
+                      <Button type="primary" size="middle" onClick={this.toBackList}>
                         Finalizar
                     </Button>
                     </div>
