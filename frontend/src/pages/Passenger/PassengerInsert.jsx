@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import { Col, ControlLabel, Grid, Row } from "react-bootstrap";
 import InputMask from "react-input-mask";
-import { notification, Button } from "antd";
+import { notification, Button, Checkbox } from "antd";
 import 'antd/dist/antd.css';
 import Card from "components/Card/Card";
 import api from '../../services/api';
 import NotificationSystem from "react-notification-system";
 import { style } from "variables/Variables.jsx";
-import {cpf} from "cpf-cnpj-validator";
+import { cpf } from "cpf-cnpj-validator";
 
 class PassengerInsert extends Component {
 
@@ -20,12 +20,24 @@ class PassengerInsert extends Component {
     rg: "",
     dataNasc: "",
     celular: "",
-    cellWhats: "",
+    cellWhats: true,
     telefone: "",
     email: "",
   };
 
   dataPassenger = {};
+
+  async componentDidMount() {
+    if (this.props.match.params.cpf != null) {
+      const passageiro = await api.get(`api/persons/individual/`, {
+        params: {
+          cpf: this.props.match.params.cpf
+        }
+      })
+      this.popularCamposPassageiroEdit(passageiro);
+      console.log(passageiro);
+    }
+  }
 
   removeCaractEspecial(texto) {
     return texto.replace(/[^a-zA-Z0-9]/g, '');
@@ -39,7 +51,7 @@ class PassengerInsert extends Component {
         notification.error({
           message: `CPF ${cpfValidar} é inválido, favor informar um CPF válido`,
         });
-        this.setState({cpf: ""});
+        this.setState({ cpf: "" });
       }
     }
   }
@@ -90,6 +102,21 @@ class PassengerInsert extends Component {
     }
   };
 
+  popularCamposPassageiroEdit(passageiro) {
+    this.setState({
+      idPassageiro: passageiro.data.id_person,
+      cpf: passageiro.data.individual.cpf,
+      nome: passageiro.data.individual.name_individual,
+      sobreNome: passageiro.data.individual.last_name,
+      rg: passageiro.data.individual.rg,
+      dataNasc: passageiro.data.individual.birth_date,
+      celular: passageiro.data.contacts[0].cell_phone,
+      cellWhats: passageiro.data.contacts[0].cell_whats,
+      telefone: passageiro.data.contacts[0].phone,
+      email: passageiro.data.contacts[0].email,
+    })
+  }
+
   limpaCamposPassageiro() {
     this.setState({
       idPassageiro: "",
@@ -114,6 +141,11 @@ class PassengerInsert extends Component {
     const field = event.target.name;
     state[field] = event.target.value;
     this.setState(state);
+
+  }
+
+  onChangeCheckbox = (event) => {
+    this.setState({ cellWhats: event.target.checked });
   }
 
   render() {
@@ -127,62 +159,70 @@ class PassengerInsert extends Component {
             <Row>
             </Row>
             <p></p>
-              <Row>
-                <Col md={12}>
-                  <form name="formPassageiro" onSubmit={this.savePassenger}>
-                    <Row>
-                      <div className="col-md-3">
-                        <ControlLabel>CPF</ControlLabel>
-                        <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
-                          type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
-                          placeholder="999.999.999-99" required onChange={this.onChange} />
+            <Row>
+              <Col md={12}>
+                <form name="formPassageiro" onSubmit={this.savePassenger}>
+                  <Row>
+                    <div className="col-md-3">
+                      <ControlLabel>CPF</ControlLabel>
+                      <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
+                        type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
+                        placeholder="999.999.999-99" required onChange={this.onChange} />
+                    </div>
+                    <div className="col-md-3">
+                      <ControlLabel>Nome</ControlLabel>
+                      <input name="nome" value={this.state.nome}
+                        type="text" className="form-control"
+                        placeholder="José" required onChange={this.onChange} />
+                    </div>
+                    <div className="col-md-3">
+                      <ControlLabel>Sobrenome</ControlLabel>
+                      <input name="sobreNome" value={this.state.sobreNome}
+                        type="text" className="form-control"
+                        placeholder="da Silva" required onChange={this.onChange} />
+                    </div>
+                    <div className="col-md-3">
+                      <ControlLabel>RG</ControlLabel>
+                      <input name="rg" value={this.state.rg}
+                        type="text" className="form-control"
+                        placeholder="00000000" required onChange={this.onChange} />
+                    </div>
+                  </Row>
+                  <Row>
+                    <div className="col-md-2">
+                      <ControlLabel>Data Nascimento</ControlLabel>
+                      <input name="dataNasc" value={this.state.dataNasc}
+                        type="date" className="form-control"
+                        placeholder="XX/XX/XXXX" required onChange={this.onChange} />
+                    </div>
+                    <div className="col-md-2">
+                      <ControlLabel>Celular</ControlLabel>
+                      <InputMask mask="(99) 99999-9999" name="celular" value={this.state.celular}
+                        type="text" className="form-control"
+                        placeholder="(XX) XXXXX-XXXX" required onChange={this.onChange} />
+                    </div>
+                    <div className="col-md-1">
+                      <ControlLabel align="center">Mensagens por Whatsapp?</ControlLabel>
+                      <div align="center" style={{ marginTop: '5px', marginBottom: '5px' }}>
+                        <Checkbox name="cellWhats" checked={this.state.cellWhats}
+                          onChange={this.onChangeCheckbox} />
                       </div>
-                      <div className="col-md-3">
-                        <ControlLabel>Nome</ControlLabel>
-                        <input name="nome" value={this.state.nome}
-                          type="text" className="form-control"
-                          placeholder="José" required onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-3">
-                        <ControlLabel>Sobrenome</ControlLabel>
-                        <input name="sobreNome" value={this.state.sobreNome}
-                          type="text" className="form-control"
-                          placeholder="da Silva" required onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-3">
-                        <ControlLabel>RG</ControlLabel>
-                        <input name="rg" value={this.state.rg}
-                          type="text" className="form-control"
-                          placeholder="00000000" required onChange={this.onChange} />
-                      </div>
-                    </Row>
-                    <Row>
-                      <div className="col-md-2">
-                        <ControlLabel>Data Nascimento</ControlLabel>
-                        <input name="dataNasc" value={this.state.dataNasc}
-                          type="date" className="form-control"
-                          placeholder="XX/XX/XXXX" required onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-2">
-                        <ControlLabel>Celular</ControlLabel>
-                        <InputMask mask="(99) 99999-9999" name="celular" value={this.state.celular}
-                          type="text" className="form-control"
-                          placeholder="(XX) XXXXX-XXXX" required onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-2">
-                        <ControlLabel>Telefone</ControlLabel>
-                        <InputMask mask="(99) 9999-9999" name="telefone" value={this.state.telefone}
-                          type="text" className="form-control"
-                          placeholder="(XX) XXXX-XXXX" onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-3">
-                        <ControlLabel>Email</ControlLabel>
-                        <input name="email" value={this.state.email}
-                          type="email" className="form-control"
-                          placeholder="xxxxxx@xxxxx.com" onChange={this.onChange} />
-                      </div>
-                    </Row>
-                
+
+                    </div>
+                    <div className="col-md-2">
+                      <ControlLabel>Telefone</ControlLabel>
+                      <InputMask mask="(99) 9999-9999" name="telefone" value={this.state.telefone}
+                        type="text" className="form-control"
+                        placeholder="(XX) XXXX-XXXX" onChange={this.onChange} />
+                    </div>
+                    <div className="col-md-3">
+                      <ControlLabel>Email</ControlLabel>
+                      <input name="email" value={this.state.email}
+                        type="email" className="form-control"
+                        placeholder="xxxxxx@xxxxx.com" onChange={this.onChange} />
+                    </div>
+                  </Row>
+
                   <div className="ant-row ant-row-end">
                     <div className="ant-col">
                       <Button type="info" size="middle" onClick={this.toBackList}>
@@ -195,9 +235,9 @@ class PassengerInsert extends Component {
                     </Button>
                     </div>
                   </div>
-                  </form>
-                </Col>
-              </Row>
+                </form>
+              </Col>
+            </Row>
           </Grid>
         } />
 

@@ -65,6 +65,14 @@ const dashboardRoutes = [
     visibleOnMenu: false,
   },
   {
+    path: "/Passenger/PassengerInsert/:cpf",
+    name: "Alterar Passageiro",
+    icon: "pe-7s-culture",
+    component: PassengerInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
     path: "/dashboard",
     name: "Dashboard",
     icon: "pe-7s-graph",

@@ -153,6 +153,10 @@ class SystemCompanyInsert extends Component {
 
   dataPartner = {};
 
+  dataCompanySystem = {};
+
+  dataCompanyPartner = {};
+
   dataBankDetails = {};
 
   removeCaractEspecial(texto) {
@@ -193,14 +197,15 @@ class SystemCompanyInsert extends Component {
 
     try {
       this.popularCamposEmpresaPost();
+      this.popularCamposEmpresaSistema();
       await api.post('api/persons/company', this.dataCompany);
-      notification.success({
-        message: `Empresa do sistema cadastrado com sucesso`,
-      });
-      this.nextStep();
+      await api.post('api/companySystem', this.dataCompanySystem);
+        notification.success({
+          message: `Empresa do sistema cadastrado com sucesso`,
+        });
+        this.nextStep();
     }
     catch (error) {
-      console.log(error);
       notification.error({
         message: `Não foi possível Salvar Empresa`,
         description: `Motivo: ${error.response.data.message}`
@@ -216,7 +221,9 @@ class SystemCompanyInsert extends Component {
 
     try {
       this.popularCamposSocioPost();
+      this.popularCamposSocioEmpresa();
       await api.post('api/persons/individual', this.dataPartner);
+      await api.post('api/companyPartner', this.dataCompanyPartner);
       notification.success({
         message: `Sócio(a) adicionado com sucesso`,
       });
@@ -416,6 +423,21 @@ class SystemCompanyInsert extends Component {
       document: this.removeCaractEspecial(this.state.cnpj),
     }
   }
+
+  popularCamposEmpresaSistema(){
+    this.dataCompanySystem = {
+      cnpj: this.removeCaractEspecial(this.state.cnpj)
+    }
+  }
+  
+
+  popularCamposSocioEmpresa () {
+    this.dataCompanyPartner = {
+      cnpj: this.removeCaractEspecial(this.state.cnpj),
+      cpf: this.removeCaractEspecial(this.state.cpf)
+    }
+  }
+  
 
   popularCamposEmpresaConsultaCep = (data) => {
     this.setState({
