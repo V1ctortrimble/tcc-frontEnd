@@ -1,7 +1,6 @@
 import React from 'react';
 import './global.css'
 import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
-import Home from './pages/Home';
 import PrivateRoute from './PrivateRoute';
 import Login from './pages/Login';
 import RecoverPassword from './pages/RecoverPassword';
@@ -15,12 +14,10 @@ function App() {
   return (
     <BrowserRouter>
     <Switch>
-      <PrivateRoute path="/home" exact component={Home} />
       <Route path="/forgetPassword" exact component={ForgetPassword} />
       <Route path="/recoverPassword/:code" exact component={RecoverPassword} />
       <PrivateRoute path="/admin" render={props => <AdminLayout {...props} />} />
       <Route path="/" exact component={Login} />
-
       <Redirect from="/" to="/admin/dashboard" />
     </Switch>
   </BrowserRouter>

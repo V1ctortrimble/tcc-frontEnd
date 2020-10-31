@@ -70,7 +70,7 @@ class Sidebar extends Component {
             {this.state.width <= 991 ? <AdminNavbarLinks /> : null}
             {this.props.routes.map((prop, key) => {
               if (!prop.redirect)
-                return (
+                return prop.visibleOnMenu?(
                   <li
                     className={
                       prop.upgrade
@@ -88,7 +88,7 @@ class Sidebar extends Component {
                       <p>{prop.name}</p>
                     </NavLink>
                   </li>
-                );
+                ): true;
               return null;
             })}
           </ul>
