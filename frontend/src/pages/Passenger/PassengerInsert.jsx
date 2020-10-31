@@ -191,7 +191,7 @@ class PassengerInsert extends Component {
                     </div>
                     <div className="ant-col">
                       <Button type="primary" size="middle" htmlType="submit" loading={this.state.loadingAvancar}>
-                        Avançar
+                        Salvar
                     </Button>
                     </div>
                   </div>
