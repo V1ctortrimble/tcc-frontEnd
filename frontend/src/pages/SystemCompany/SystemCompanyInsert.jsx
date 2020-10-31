@@ -193,20 +193,17 @@ class SystemCompanyInsert extends Component {
 
     try {
       this.popularCamposEmpresaPost();
-
-      const response = await api.post('api/persons/company', this.dataCompany);
-      console.log(response);
+      await api.post('api/persons/company', this.dataCompany);
       notification.success({
         message: `Empresa do sistema cadastrado com sucesso`,
       });
-
       this.nextStep();
-
     }
     catch (error) {
       console.log(error);
       notification.error({
-        message: 'Não foi possível Salvar Empresa'
+        message: `Não foi possível Salvar Empresa`,
+        description: `Motivo: ${error.response.data.message}`
       });
     } finally {
       this.setState({ loadingAvancar: false })
@@ -219,19 +216,17 @@ class SystemCompanyInsert extends Component {
 
     try {
       this.popularCamposSocioPost();
-      console.log(this.dataPartner);
-      const response = await api.post('api/persons/individual', this.dataPartner);
-      console.log(response);
+      await api.post('api/persons/individual', this.dataPartner);
       notification.success({
-        message: `Socio adicionado com sucesso`,
+        message: `Sócio(a) adicionado com sucesso`,
       });
       this.limpaCamposSocio();
     }
     catch (error) {
       notification.error({
-        message: 'Não foi possível Salvar Sócio'
+        message: 'Não foi possível Salvar Sócio',
+        description: `Motivo: ${error.response.data.message}`
       });
-      console.log(error)
     } finally {
       this.setState({ loadingAvancar: false })
     }
@@ -243,15 +238,16 @@ class SystemCompanyInsert extends Component {
 
     try {
       this.popularCamposBancoPost();
-      const response = await api.post('api/persons/bankDetails', this.dataBankDetails);
-      console.log(response);
+      await api.post('api/persons/bankDetails', this.dataBankDetails);
       notification.success({
         message: `Dados Bancários adicionado com sucesso`,
       });
+      this.limpaCamposDadosBancarios();
     }
     catch (error) {
       notification.error({
-        message: 'Não foi possível Salvar dados Bancários'
+        message: `Não foi possível Salvar dados Bancários`,
+        description: `Motivo: ${error.response.data.message}`
       });
     } finally {
       this.setState({ loadingAvancar: false })
@@ -408,8 +404,7 @@ class SystemCompanyInsert extends Component {
 
   popularCamposBancoPost() {
     this.dataBankDetails = {
-      idPerson: this.state.idEmpresa,
-      bankDetails: [
+      bank_details: 
         {
           active: true,
           bank: this.state.banco,
@@ -417,8 +412,8 @@ class SystemCompanyInsert extends Component {
           account: this.state.conta,
           digit: this.state.digito,
           operation: this.state.operacao,
-        }
-      ]
+        },
+      document: this.removeCaractEspecial(this.state.cnpj),
     }
   }
 
@@ -457,6 +452,16 @@ class SystemCompanyInsert extends Component {
       bairroSocio: "",
       cidadeSocio: "",
       estadoSocio: ""
+    })
+  }
+
+  limpaCamposDadosBancarios() {
+    this.setState({
+        banco: "",
+        agencia: "",
+        conta: "",
+        digito: "",
+        operacao: "",
     })
   }
 
