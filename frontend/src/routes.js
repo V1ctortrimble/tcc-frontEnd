@@ -28,6 +28,8 @@ import UserRegistration from "pages/UserRegistration/UserRegistration";
 import Upgrade from "views/Upgrade.jsx";
 import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
 import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
+import PassengerList from "pages/Passenger/PassengerList.jsx"
+import PassengerInsert from "pages/Passenger/PassengerInsert.jsx"
 
 const dashboardRoutes = [
   {
@@ -43,6 +45,22 @@ const dashboardRoutes = [
     name: "Cadastro Empresa do Sistema",
     icon: "pe-7s-culture",
     component: SystemCompanyInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/Passenger/PassengerList.jsx",
+    name: "Passageiros",
+    icon: "pe-7s-add-user",
+    component: PassengerList,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
+  {
+    path: "/Passenger/PassengerInsert.jsx",
+    name: "Cadastro de Passageiro",
+    icon: "pe-7s-culture",
+    component: PassengerInsert,
     layout: "/admin",
     visibleOnMenu: false,
   },
