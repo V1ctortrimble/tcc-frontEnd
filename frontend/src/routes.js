@@ -110,20 +110,11 @@ const dashboardRoutes = [
     visibleOnMenu: true,
   },
   {
-<<<<<<< HEAD
     path: "/UserRegistration",
     component: UserRegistration,
     layout: "/admin"
-  }
-  // {/*
-  //   upgrade: true,
-  //   path: "/upgrade",
-  //   name: "Upgrade to PRO",
-  //   icon: "pe-7s-rocket",
-  //   component: Upgrade,
-  //   layout: "/admin"
-  // */}
-=======
+  },
+  {
     upgrade: true,
     path: "/upgrade",
     name: "Upgrade to PRO",
@@ -132,7 +123,6 @@ const dashboardRoutes = [
     layout: "/admin",
     visibleOnMenu: false,
   },
->>>>>>> feature-TSK041-Cadastro-Empresa-Sistema
 ];
 
 export default dashboardRoutes;
