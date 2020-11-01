@@ -4,106 +4,114 @@ import InputMask from "react-input-mask";
 import { Steps, Table, notification, Button } from "antd";
 import 'antd/dist/antd.css';
 import Card from "components/Card/Card";
-import { EditFilled } from '@ant-design/icons';
+import { EditFilled, DeleteFilled } from '@ant-design/icons';
 import cep from 'cep-promise';
 import api from '../../services/api';
-import NotificationSystem from "react-notification-system";
-import { style } from "variables/Variables.jsx";
-import {cpf, cnpj} from "cpf-cnpj-validator";
+import { cpf, cnpj } from "cpf-cnpj-validator";
 
 const { Step } = Steps;
 
-const columns = [
-  {
-    title: 'Nome Sócio',
-    width: 200,
-    dataIndex: 'namePartner',
-    key: 'name',
-    fixed: 'left',
-  },
-  {
-    title: 'CPF',
-    width: 200,
-    dataIndex: 'cpf',
-    key: 'cpf',
-    fixed: 'left',
-  },
-  {
-    title: 'Ações',
-    key: 'operation',
-    fixed: 'right',
-    width: 100,
-    render: () => <div> <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>
-      <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>
-    </div>
-  },
-];
-
-const columnsBank = [
-  {
-    title: 'Banco',
-    width: 50,
-    dataIndex: 'bank',
-    key: 'bank',
-    fixed: 'left',
-  },
-  {
-    title: 'Agência',
-    width: 50,
-    dataIndex: 'agencia',
-    key: 'agencia',
-    fixed: 'left',
-  },
-  {
-    title: 'Conta',
-    width: 50,
-    dataIndex: 'conta',
-    key: 'conta',
-    fixed: 'left',
-  },
-  {
-    title: 'Digito',
-    width: 30,
-    dataIndex: 'digito',
-    key: 'digito',
-    fixed: 'left',
-  },
-  {
-    title: 'Operação',
-    width: 30,
-    dataIndex: 'operacao',
-    key: 'operacao',
-    fixed: 'left',
-  },
-  {
-    title: 'Ações',
-    key: 'operation',
-    fixed: 'right',
-    width: 50,
-    render: () => <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>,
-  },
-];
-
-const data = [
-  {
-    key: '1',
-    namePartner: 'José',
-    cpf: '000.000.000-00',
-  },
-];
-
-const dataBank = [
-  {
-    key: '1',
-    bank: 'Caixa',
-    agencia: '0175',
-    conta: '1425',
-    digito: '3',
-    operacao: '013',
-  },
-];
-
 class SystemCompanyInsert extends Component {
+
+  columns = [
+    {
+      title: 'Nome Sócio',
+      width: 200,
+      dataIndex: 'namePartner',
+      key: 'name',
+      fixed: 'left',
+    },
+    {
+      title: 'Sobrenome Sócio',
+      width: 200,
+      dataIndex: 'sobreNomePartner',
+      key: 'sobrenome',
+      fixed: 'left',
+    },
+    {
+      title: 'CPF',
+      width: 200,
+      dataIndex: 'cpf',
+      key: 'cpf',
+      fixed: 'left',
+    },
+    {
+      title: 'Ações',
+      key: 'operation',
+      fixed: 'right',
+      width: 100,
+      render: () => <div> <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>
+        <a href="/admin"><Button type="primary" danger size="small"><DeleteFilled /></Button> </a>
+      </div>
+    },
+  ];
+
+  columnsBank = [
+    {
+      title: 'Banco',
+      width: 50,
+      dataIndex: 'bank',
+      key: 'bank',
+      fixed: 'left',
+    },
+    {
+      title: 'Agência',
+      width: 50,
+      dataIndex: 'agencia',
+      key: 'agencia',
+      fixed: 'left',
+    },
+    {
+      title: 'Conta',
+      width: 50,
+      dataIndex: 'conta',
+      key: 'conta',
+      fixed: 'left',
+    },
+    {
+      title: 'Digito',
+      width: 30,
+      dataIndex: 'digito',
+      key: 'digito',
+      fixed: 'left',
+    },
+    {
+      title: 'Operação',
+      width: 30,
+      dataIndex: 'operacao',
+      key: 'operacao',
+      fixed: 'left',
+    },
+    {
+      title: 'Ações',
+      key: 'operation',
+      fixed: 'right',
+      width: 50,
+      render: () => <div> <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>
+        <a href="/admin"><Button type="primary" danger size="small"><DeleteFilled /></Button> </a>
+      </div>
+    },
+  ];
+
+  data = [
+    {
+      key: '1',
+      namePartner: 'José',
+      sobreNomePartner: "Da Silva",
+      cpf: '000.000.000-00',
+    },
+  ];
+
+  dataBank = [
+    {
+      key: '1',
+      bank: 'Caixa',
+      agencia: '0175',
+      conta: '1425',
+      digito: '3',
+      operacao: '013',
+    },
+  ];
 
   state = {
     current: 0,
@@ -113,7 +121,7 @@ class SystemCompanyInsert extends Component {
     desabilitarCamposEndereco: true,
     desabilitarEndBairroSocio: true,
     desabilitarCamposEnderecoSocio: true,
-    idEmpresa: "",
+    idEmpresaSistema: "",
     cnpj: "",
     razaoSocial: "",
     nomeFantasia: "",
@@ -155,6 +163,17 @@ class SystemCompanyInsert extends Component {
 
   dataBankDetails = {};
 
+  async componentDidMount() {
+    if (this.props.match.params.cnpj != null) {
+      const empresaSistema = await api.get(`api/persons/individual/`, {
+        params: {
+          cnpj: this.props.match.params.cnpj
+        }
+      })
+      this.popularCamposEmpresaSistemaEdit(empresaSistema);
+    }
+  }
+
   removeCaractEspecial(texto) {
     return texto.replace(/[^a-zA-Z0-9]/g, '');
   }
@@ -167,7 +186,7 @@ class SystemCompanyInsert extends Component {
         notification.error({
           message: `CPF ${cpfValidar} é inválido, favor informar um CPF válido`,
         });
-        this.setState({cpf: ""});
+        this.setState({ cpf: "" });
       }
     }
   }
@@ -181,7 +200,7 @@ class SystemCompanyInsert extends Component {
         notification.error({
           message: `CNPJ ${cnpjValidar} é inválido, favor informar um CNPJ válido`,
         });
-        this.setState({cnpj: ""});
+        this.setState({ cnpj: "" });
       }
     }
   }
@@ -422,6 +441,13 @@ class SystemCompanyInsert extends Component {
     }
   }
 
+  popularCamposEmpresaSistemaEdit(empresaSistema) {
+    this.setState({
+      idEmpresaSistema: empresaSistema.data.id_com_system,
+      cnpj: empresaSistema.data.cnpj,
+    })
+  }
+
   popularCamposEmpresaConsultaCep = (data) => {
     this.setState({
       endereco: data.street,
@@ -490,7 +516,6 @@ class SystemCompanyInsert extends Component {
     return (
 
       <div className="content">
-        <NotificationSystem ref="notificationSystem" style={style} />
         <Card content={
           <Grid fluid>
             <Row>
@@ -749,7 +774,7 @@ class SystemCompanyInsert extends Component {
                     </div>
                   </form>
                   <div className="content">
-                    <Table columns={columns} dataSource={data} bordered scroll={{ x: 100 }} pagination={{
+                    <Table columns={this.columns} dataSource={this.data} bordered scroll={{ x: 100 }} pagination={{
                       showTotal: total =>
                         `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
                       showQuickJumper: true,
@@ -816,7 +841,7 @@ class SystemCompanyInsert extends Component {
                     </div>
                   </form>
                   <div className="content">
-                    <Table columns={columnsBank} dataSource={dataBank} bordered scroll={{ x: 100 }} pagination={{
+                    <Table columns={this.columnsBank} dataSource={this.dataBank} bordered scroll={{ x: 100 }} pagination={{
                       showTotal: total =>
                         `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
                       showQuickJumper: true,
