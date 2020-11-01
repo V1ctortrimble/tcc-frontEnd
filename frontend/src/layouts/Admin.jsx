@@ -41,7 +41,7 @@ class Admin extends Component {
       fixedClasses: "dropdown"
     };
   }
-  handleNotificationClick = (position, level, message, icon) => {
+  handleNotificationClick = (position) => {
     this.setState({ _notificationSystem: this.refs.notificationSystem });
     var _notificationSystem = this.refs.notificationSystem;
     /*var color = Math.floor(Math.random() * 4 + 1);
@@ -63,13 +63,13 @@ class Admin extends Component {
         break;
     }*/
     _notificationSystem.addNotification({
-      title: <span data-notify="icon" className={icon} />,
+      title: <span data-notify="icon" className="pe-7s-culture" />,
       message: (
         <div>
-          {message}
+          messagem
         </div>
       ),
-      level: level,
+      level: "success",
       position: position,
       autoDismiss: 3
     });
@@ -94,7 +94,7 @@ class Admin extends Component {
       }
     });
   };
-  getBrandText = path => {
+  getBrandText(pathname) {
     for (let i = 0; i < routes.length; i++) {
       if (
         this.props.location.pathname.indexOf(
@@ -102,6 +102,13 @@ class Admin extends Component {
         ) !== -1
       ) {
         return routes[i].name;
+      } if (routes[i].path.includes(':')){
+        let path = routes[i].path.split(":");
+        let nav = this.props.location.pathname.split("/")
+        if (this.props.location.pathname.indexOf(
+          routes[i].layout + path[0] + nav[4]) !== -1) {
+          return routes[i].name;
+        }
       }
     }
     return "Brand";
@@ -175,8 +182,8 @@ class Admin extends Component {
       <div className="wrapper">
         <NotificationSystem ref="notificationSystem" style={style} />
         <Sidebar {...this.props} routes={routes} image={this.state.image}
-        color={this.state.color}
-        hasImage={this.state.hasImage}/>
+          color={this.state.color}
+          hasImage={this.state.hasImage} />
         <div id="main-panel" className="main-panel" ref="mainPanel">
           <AdminNavbar
             {...this.props}

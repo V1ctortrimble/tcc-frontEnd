@@ -1,9 +1,12 @@
 import React, { Component } from "react";
-import { Grid, Row, Col } from "react-bootstrap";
-import { Button, Table } from "antd";
+import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
+import { Button, Table, Collapse, notification } from "antd";
+import InputMask from "react-input-mask";
 import 'antd/dist/antd.css';
 import { EditFilled } from '@ant-design/icons';
 import api from "services/api";
+import moment from 'moment';
+import { cpf } from "cpf-cnpj-validator";
 
 //const [pager, setPager] = useState();
 
@@ -13,9 +16,10 @@ pageSize: 10,
 total: 100,
 });*/
 
-
+const { Panel } = Collapse;
 
 class PassengerList extends Component {
+
     columns = [
         {
             title: 'CPF',
@@ -51,35 +55,62 @@ class PassengerList extends Component {
             key: 'operation',
             fixed: 'right',
             width: 80,
-            render: (x) =>   
-            <Button onClick={() => this.props.history.push(`/admin/Passenger/PassengerInsert/${x.cpf}`)} type="primary" size="small"><EditFilled /></Button>
+            render: (x) =>
+                <Button onClick={() => this.props.history.push(`/admin/Passenger/PassengerInsert/${x.cpf}`)} type="primary" size="small"><EditFilled /></Button>
         },
     ];
 
     state = {
-        data: [
-            {
-                key: '1',
-                cpf: '000.000.000-00',
-                name: 'Jose',
-                sobrenome: 'das Couves',
-                datanasc: '14/01/1978'
-            },
-            {
-                key: '2',
-                cpf: '999.999.999-99',
-                name: 'Sabrina',
-                sobrenome: 'Sato',
-                datanasc: '04/02/1981'
-            },
-        ]
+        data: [{
+
+        }
+        ],
+        pager: {
+            current: 1,
+            pageSize: 10,
+            total: 100,
+        },
+        cpf: "",
+        nome: "",
+        sobreNome: "",
+        dataNasc: "",
+        loading: false,
     }
 
     handleClick = () => {
         this.props.history.push("/admin/Passenger/PassengerInsert.jsx")
     }
 
-    async componentDidMount () {
+    validaCpf(cpfValidar) {
+        const cpfLimpo = this.removeCaractEspecial(cpfValidar);
+        if (cpfLimpo.length === 11) {
+            if (cpf.isValid(cpfLimpo)) {
+            } else {
+                notification.error({
+                    message: `CPF ${cpfValidar} é inválido, favor informar um CPF válido`,
+                });
+                this.setState({ cpf: "" });
+            }
+        }
+    }
+
+    removeCaractEspecial(texto) {
+        return texto.replace(/[^a-zA-Z0-9]/g, '');
+    }
+
+    filtrarDados() {
+
+    }
+
+    onChange = (event) => {
+        const state = Object.assign({}, this.state);
+        const field = event.target.name;
+        state[field] = event.target.value;
+        this.setState(state);
+    }
+
+    async componentDidMount() {
+        console.log(this.props);
         let x = [];
         try {
             const data = await api.get('api/persons/individual/all');
@@ -89,11 +120,10 @@ class PassengerList extends Component {
                     cpf: item.cpf,
                     name: item.name_individual,
                     sobrenome: item.last_name,
-                    datanasc: item.birth_date
+                    datanasc: moment(item.birth_date).format("DD/MM/YYYY")
                 })
             })
-            this.setState({data: x});
-            console.log(data);
+            this.setState({ data: x });
         } catch (error) {
             console.log(error);
         }
@@ -106,6 +136,46 @@ class PassengerList extends Component {
                     <Row>
                         <Col md={12}>
                             <Button onClick={this.handleClick} className="ant-btn-primary">Novo</Button>
+                            <p></p>
+                            <Collapse>
+                                <Panel header="Filtros" key="1">
+                                <form name="formFilterPassenger" onSubmit={this.filtrarDados}>
+                                    <Row>
+                                            <div className="col-md-3">
+                                                <ControlLabel>CPF</ControlLabel>
+                                                <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
+                                                    type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
+                                                    placeholder="999.999.999-99" onChange={this.onChange} />
+                                            </div>
+                                            <div className="col-md-3">
+                                                <ControlLabel>Nome</ControlLabel>
+                                                <input name="nome" value={this.state.nome}
+                                                    type="text" className="form-control"
+                                                    placeholder="José" onChange={this.onChange} />
+                                            </div>
+                                            <div className="col-md-3">
+                                                <ControlLabel>Sobrenome</ControlLabel>
+                                                <input name="sobreNome" value={this.state.sobreNome}
+                                                    type="text" className="form-control"
+                                                    placeholder="da Silva" onChange={this.onChange} />
+                                            </div>
+                                            <div className="col-md-3">
+                                                <ControlLabel>Data Nascimento</ControlLabel>
+                                                <input name="Data Nascimento" value={this.state.dataNasc}
+                                                    type="text" className="form-control"
+                                                    placeholder="xx/xx/xxxx" onChange={this.onChange} />
+                                            </div>
+                                            </Row>
+                                            <div className="ant-row ant-row-end" style={{ marginTop: '30px'}}>
+                                                <div className="ant-col">
+                                                    <Button size="middle" htmlType="submit"
+                                                        type="primary" loading={this.state.loading}>Filtrar</Button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    
+                                </Panel>
+                            </Collapse>
                             <p></p>
                             <Table columns={this.columns} dataSource={this.state.data} bordered scroll={{ x: 100 }} pagination={{
                                 showTotal: total =>

@@ -33,6 +33,7 @@ import PassengerInsert from "pages/Passenger/PassengerInsert.jsx"
 
 const dashboardRoutes = [
   {
+    pathN: "/systemCompany/SystemCompanyList.jsx",
     path: "/systemCompany/SystemCompanyList.jsx",
     name: "Empresa do Sistema",
     icon: "pe-7s-culture",
