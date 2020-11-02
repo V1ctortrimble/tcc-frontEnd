@@ -56,7 +56,7 @@ class PassengerList extends Component {
             fixed: 'right',
             width: 80,
             render: (x) =>
-                <Button onClick={() => this.props.history.push(`/admin/Passenger/PassengerInsert/${x.cpf}`)} type="primary" size="small"><EditFilled /></Button>
+                <Button onClick={() => this.alterarPassageiro(x)} type="primary" size="small"><EditFilled /></Button>
         },
     ];
 
@@ -81,6 +81,11 @@ class PassengerList extends Component {
         this.props.history.push("/admin/Passenger/PassengerInsert.jsx")
     }
 
+    alterarPassageiro(x) {
+        let cpf = this.removeMascaraCpf(x.cpf);
+        this.props.history.push(`/admin/Passenger/PassengerInsert/${cpf}`)
+    }
+
     validaCpf(cpfValidar) {
         const cpfLimpo = this.removeCaractEspecial(cpfValidar);
         if (cpfLimpo.length === 11) {
@@ -92,6 +97,18 @@ class PassengerList extends Component {
                 this.setState({ cpf: "" });
             }
         }
+    }
+
+    mascaraCpf(cpf) {
+        return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/g,"$1.$2.$3-$4");
+    }
+
+    removeMascaraCpf(cpf){
+        return this.removeCaractEspecial(cpf);
+    }
+
+    mascaraCnpj(cnpj) {
+        return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g,"$1.$2.$3/$4-$5");
     }
 
     removeCaractEspecial(texto) {
@@ -117,7 +134,7 @@ class PassengerList extends Component {
             data.data.content.forEach((item, index) => {
                 x.push({
                     key: index,
-                    cpf: item.cpf,
+                    cpf: this.mascaraCpf(item.cpf),
                     name: item.name_individual,
                     sobrenome: item.last_name,
                     datanasc: moment(item.birth_date).format("DD/MM/YYYY")
