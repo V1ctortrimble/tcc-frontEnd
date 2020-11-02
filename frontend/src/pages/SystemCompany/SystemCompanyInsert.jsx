@@ -204,9 +204,10 @@ class SystemCompanyInsert extends Component {
       } catch (error) {
         notification.error({
           message: `Não foi possível carregar os sócios`,
-          description: `Motivo: ${error.response.data.message}`
+          //description: `Motivo: ${error.response.data.message}`
         })
       }
+      
     }
   }
 
@@ -237,6 +238,7 @@ class SystemCompanyInsert extends Component {
           message: `CNPJ ${cnpjValidar} é inválido, favor informar um CNPJ válido`,
         });
         this.setState({ cnpj: "" });
+        console.log(this.props)
       }
     }
   }
