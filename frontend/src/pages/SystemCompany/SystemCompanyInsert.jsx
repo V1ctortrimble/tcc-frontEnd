@@ -8,6 +8,7 @@ import { EditFilled, DeleteFilled } from '@ant-design/icons';
 import cep from 'cep-promise';
 import api from '../../services/api';
 import { cpf, cnpj } from "cpf-cnpj-validator";
+import moment from 'moment';
 
 const { Step } = Steps;
 
@@ -15,24 +16,31 @@ class SystemCompanyInsert extends Component {
 
   columns = [
     {
+      title: 'CPF',
+      width: 200,
+      dataIndex: 'cpf',
+      key: 'cpf',
+      fixed: 'left',
+    },
+    {
       title: 'Nome Sócio',
       width: 200,
       dataIndex: 'namePartner',
-      key: 'name',
+      key: 'namePartner',
       fixed: 'left',
     },
     {
       title: 'Sobrenome Sócio',
       width: 200,
       dataIndex: 'sobreNomePartner',
-      key: 'sobrenome',
+      key: 'sobreNomePartner',
       fixed: 'left',
     },
     {
-      title: 'CPF',
+      title: 'Data Nasc',
       width: 200,
-      dataIndex: 'cpf',
-      key: 'cpf',
+      dataIndex: 'dataNascPartner',
+      key: 'dataNascPartner',
       fixed: 'left',
     },
     {
@@ -96,9 +104,10 @@ class SystemCompanyInsert extends Component {
   data = [
     {
       key: '1',
+      cpf: '000.000.000-00',
       namePartner: 'José',
       sobreNomePartner: "Da Silva",
-      cpf: '000.000.000-00',
+      dataNascPartner: "01/01/1900"
     },
   ];
 
@@ -165,12 +174,28 @@ class SystemCompanyInsert extends Component {
 
   async componentDidMount() {
     if (this.props.match.params.cnpj != null) {
-      const empresaSistema = await api.get(`api/persons/individual/`, {
+      try {
+        const empresaSistema = await api.get(`api/persons/individual/`, {
+          params: {
+            cnpj: this.props.match.params.cnpj
+          }
+        })
+        this.popularCamposEmpresaSistemaEdit(empresaSistema);
+        
+      } catch (error) {
+        notification.error({
+          message: `CPF é inválido, favor informar um CPF válido`,
+      });
+        
+      }
+      
+
+      const sociosEmpresa = await api.get(`api/companyPartner`, {
         params: {
           cnpj: this.props.match.params.cnpj
         }
       })
-      this.popularCamposEmpresaSistemaEdit(empresaSistema);
+      this.popularTabelaSocios(sociosEmpresa);
     }
   }
 
@@ -446,6 +471,22 @@ class SystemCompanyInsert extends Component {
       idEmpresaSistema: empresaSistema.data.id_com_system,
       cnpj: empresaSistema.data.cnpj,
     })
+  }
+
+  popularTabelaSocios(sociosEmpresa){
+    let x = [];
+    sociosEmpresa.data.content.forEach((item, index) => {
+      x.push({
+          key: index,
+          cpf: item.cpf,
+          namePartner: item.name_individual,
+          sobreNomePartner: item.last_name,
+          dataNascPartner: moment(item.birth_date).format("DD/MM/YYYY")
+      })
+  });
+  this.setState({
+    data: x
+  })
   }
 
   popularCamposEmpresaConsultaCep = (data) => {
