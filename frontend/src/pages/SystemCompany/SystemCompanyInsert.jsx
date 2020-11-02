@@ -16,7 +16,7 @@ class SystemCompanyInsert extends Component {
 
   columns = [
     {
-      title: 'CPF',
+      title: 'CPF Sócio',
       width: 200,
       dataIndex: 'cpf',
       key: 'cpf',
@@ -185,21 +185,28 @@ class SystemCompanyInsert extends Component {
           }
         })
         this.popularCamposEmpresaSistemaEdit(empresaSistema);
-        
+
       } catch (error) {
         notification.error({
-          message: `CPF é inválido, favor informar um CPF válido`,
-      });
-        
+          message: `Não foi possível carregar os dados para edição`,
+          description: `Motivo: ${error.response.data.message}`
+        })
       }
-      
 
-      const sociosEmpresa = await api.get(`api/companyPartner`, {
-        params: {
-          cnpj: this.props.match.params.cnpj
-        }
-      })
-      this.popularTabelaSocios(sociosEmpresa);
+      try {
+        const sociosEmpresa = await api.get(`api/companyPartner`, {
+          params: {
+            cnpj: this.props.match.params.cnpj
+          }
+        })
+        this.popularTabelaSocios(sociosEmpresa);
+
+      } catch (error) {
+        notification.error({
+          message: `Não foi possível carregar os sócios`,
+          description: `Motivo: ${error.response.data.message}`
+        })
+      }
     }
   }
 
@@ -244,10 +251,10 @@ class SystemCompanyInsert extends Component {
       this.popularCamposEmpresaSistema();
       await api.post('api/persons/company', this.dataCompany);
       await api.post('api/companySystem', this.dataCompanySystem);
-        notification.success({
-          message: `Empresa do sistema cadastrado com sucesso`,
-        });
-        this.nextStep();
+      notification.success({
+        message: `Empresa do sistema cadastrado com sucesso`,
+      });
+      this.nextStep();
     }
     catch (error) {
       notification.error({
@@ -455,33 +462,33 @@ class SystemCompanyInsert extends Component {
 
   popularCamposBancoPost() {
     this.dataBankDetails = {
-      bank_details: 
-        {
-          active: true,
-          bank: this.state.banco,
-          agency: this.state.agencia,
-          account: this.state.conta,
-          digit: this.state.digito,
-          operation: this.state.operacao,
-        },
+      bank_details:
+      {
+        active: true,
+        bank: this.state.banco,
+        agency: this.state.agencia,
+        account: this.state.conta,
+        digit: this.state.digito,
+        operation: this.state.operacao,
+      },
       document: this.removeCaractEspecial(this.state.cnpj),
     }
   }
 
-  popularCamposEmpresaSistema(){
+  popularCamposEmpresaSistema() {
     this.dataCompanySystem = {
       cnpj: this.removeCaractEspecial(this.state.cnpj)
     }
   }
-  
 
-  popularCamposSocioEmpresa () {
+
+  popularCamposSocioEmpresa() {
     this.dataCompanyPartner = {
       cnpj: this.removeCaractEspecial(this.state.cnpj),
       cpf: this.removeCaractEspecial(this.state.cpf)
     }
   }
-  
+
   popularCamposEmpresaSistemaEdit(empresaSistema) {
     this.setState({
       idEmpresaSistema: empresaSistema.data.id_com_system,
@@ -489,20 +496,33 @@ class SystemCompanyInsert extends Component {
     })
   }
 
-  popularTabelaSocios(sociosEmpresa){
+  popularTabelaSocios(sociosEmpresa) {
     let x = [];
     sociosEmpresa.data.content.forEach((item, index) => {
       x.push({
-          key: index,
-          cpf: item.cpf,
-          namePartner: item.name_individual,
-          sobreNomePartner: item.last_name,
-          dataNascPartner: moment(item.birth_date).format("DD/MM/YYYY")
+        key: index,
+        cpf: item.cpf,
+        namePartner: item.name_individual,
+        sobreNomePartner: item.last_name,
+        dataNascPartner: moment(item.birth_date).format("DD/MM/YYYY")
       })
-  });
-  this.setState({
-    data: x
-  })
+    });
+    this.setState({data: x})
+  }
+
+  popularTabelaDadosBancarios(dadosBancarios) {
+    let y = [];
+    dadosBancarios.data.content.forEach((item, index) =>{
+      y.push({
+        key: index,
+        bank: item.bank_details.bank,
+        agencia: item.bank_details.agency,
+        conta: item.bank_details.account,
+        digito: item.bank_details.digit,
+        operacao: item.bank_details.operation
+      })
+    });
+    this.setState({dataBank: y})
   }
 
   popularCamposEmpresaConsultaCep = (data) => {
@@ -545,11 +565,11 @@ class SystemCompanyInsert extends Component {
 
   limpaCamposDadosBancarios() {
     this.setState({
-        banco: "",
-        agencia: "",
-        conta: "",
-        digito: "",
-        operacao: "",
+      banco: "",
+      agencia: "",
+      conta: "",
+      digito: "",
+      operacao: "",
     })
   }
 
