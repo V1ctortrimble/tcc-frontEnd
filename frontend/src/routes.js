@@ -74,6 +74,14 @@ const dashboardRoutes = [
     visibleOnMenu: false,
   },
   {
+    path: "/systemCompany/SystemCompanyInsert/:cnpj",
+    name: "Alterar Empresa do Sistema",
+    icon: "pe-7s-culture",
+    component: SystemCompanyInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
     path: "/dashboard",
     name: "Dashboard",
     icon: "pe-7s-graph",
