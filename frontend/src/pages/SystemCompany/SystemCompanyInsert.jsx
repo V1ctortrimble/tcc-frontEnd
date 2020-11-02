@@ -468,7 +468,6 @@ class SystemCompanyInsert extends Component {
     }
   }
 
-<<<<<<< HEAD
   popularCamposEmpresaSistema(){
     this.dataCompanySystem = {
       cnpj: this.removeCaractEspecial(this.state.cnpj)
@@ -483,7 +482,6 @@ class SystemCompanyInsert extends Component {
     }
   }
   
-=======
   popularCamposEmpresaSistemaEdit(empresaSistema) {
     this.setState({
       idEmpresaSistema: empresaSistema.data.id_com_system,
@@ -506,7 +504,6 @@ class SystemCompanyInsert extends Component {
     data: x
   })
   }
->>>>>>> 146fb7c5e6d14426106784c937f582b093ad1483
 
   popularCamposEmpresaConsultaCep = (data) => {
     this.setState({
