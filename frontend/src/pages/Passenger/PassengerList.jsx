@@ -209,8 +209,8 @@ class PassengerList extends Component {
             })
         } catch (error) {
             console.log(error);
-            notification.error({
-                message: "Algo de errado aconteceu",
+            notification.warning({
+                message: "Aviso",
                 description: `Motivo: ${error.response.data.message}`
             });
             this.setState({ data: "" });
