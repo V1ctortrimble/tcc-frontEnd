@@ -8,14 +8,6 @@ import api from "services/api";
 import moment from 'moment';
 import { cpf } from "cpf-cnpj-validator";
 
-//const [pager, setPager] = useState();
-
-/*setPager({
-current: 1,
-pageSize: 10,
-total: 100,
-});*/
-
 const { Panel } = Collapse;
 
 class PassengerList extends Component {
@@ -43,6 +35,13 @@ class PassengerList extends Component {
             fixed: 'left',
         },
         {
+            title: 'RG',
+            width: 150,
+            dataIndex: 'rg',
+            key: 'rg',
+            fixed: 'left',
+        },
+        {
             title: 'Data Nascimento',
             width: 150,
             dataIndex: 'datanasc',
@@ -61,19 +60,16 @@ class PassengerList extends Component {
     ];
 
     state = {
-        data: [{
-
-        }
-        ],
+        data: [{}],
         pager: {
-            current: 1,
-            pageSize: 10,
-            total: 100,
+            current: "",
+            pageSize: "",
+            total: "",
         },
         cpf: "",
         nome: "",
         sobreNome: "",
-        dataNasc: "",
+        rg: "",
         loading: false,
     }
 
@@ -100,23 +96,19 @@ class PassengerList extends Component {
     }
 
     mascaraCpf(cpf) {
-        return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/g,"$1.$2.$3-$4");
+        return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/g, "$1.$2.$3-$4");
     }
 
-    removeMascaraCpf(cpf){
+    removeMascaraCpf(cpf) {
         return this.removeCaractEspecial(cpf);
     }
 
     mascaraCnpj(cnpj) {
-        return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g,"$1.$2.$3/$4-$5");
+        return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g, "$1.$2.$3/$4-$5");
     }
 
     removeCaractEspecial(texto) {
         return texto.replace(/[^a-zA-Z0-9]/g, '');
-    }
-
-    filtrarDados() {
-
     }
 
     onChange = (event) => {
@@ -126,24 +118,53 @@ class PassengerList extends Component {
         this.setState(state);
     }
 
-    async componentDidMount() {
-        console.log(this.props);
+    async buscarIndividualApi(current = 1, size = 10) {
+        this.setState({ loading: true });
         let x = [];
         try {
-            const data = await api.get('api/persons/individual/all');
+            const data = await api.get('api/persons/individual/filter', {
+                params: {
+                    pageNumber: current,
+                    pageSize: size,
+                    cpf: this.removeMascaraCpf(this.state.cpf),
+                    name: this.state.nome,
+                    lastname: this.state.sobreNome,
+                    rg: this.state.rg,
+                    sort: 'nameIndividual,asc'
+                },  
+            });
             data.data.content.forEach((item, index) => {
                 x.push({
                     key: index,
                     cpf: this.mascaraCpf(item.cpf),
                     name: item.name_individual,
                     sobrenome: item.last_name,
+                    rg: item.rg,
                     datanasc: moment(item.birth_date).format("DD/MM/YYYY")
                 })
             })
             this.setState({ data: x });
+            this.setState({
+                pager: {
+                    current: current,
+                    pageSize: size,
+                    total: data,
+                }
+            })
         } catch (error) {
             console.log(error);
+            notification.error({
+                message: "Algo de errado aconteceu",
+                description: `Motivo: ${error.response.data.message}`
+            });
+            this.setState({ data: "" });
+        } finally {
+            this.setState({ loading: false });
         }
+    }
+
+    async componentDidMount() {
+        this.buscarIndividualApi();
     }
 
     render() {
@@ -156,8 +177,8 @@ class PassengerList extends Component {
                             <p></p>
                             <Collapse>
                                 <Panel header="Filtros" key="1">
-                                <form name="formFilterPassenger" onSubmit={this.filtrarDados}>
-                                    <Row>
+                                    <form name="formFilterPassenger">
+                                        <Row>
                                             <div className="col-md-3">
                                                 <ControlLabel>CPF</ControlLabel>
                                                 <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
@@ -177,29 +198,38 @@ class PassengerList extends Component {
                                                     placeholder="da Silva" onChange={this.onChange} />
                                             </div>
                                             <div className="col-md-3">
-                                                <ControlLabel>Data Nascimento</ControlLabel>
-                                                <input name="Data Nascimento" value={this.state.dataNasc}
+                                                <ControlLabel>RG</ControlLabel>
+                                                <input name="rg" value={this.state.rg}
                                                     type="text" className="form-control"
-                                                    placeholder="xx/xx/xxxx" onChange={this.onChange} />
+                                                    placeholder="9999999" onChange={this.onChange} />
                                             </div>
-                                            </Row>
-                                            <div className="ant-row ant-row-end" style={{ marginTop: '30px'}}>
-                                                <div className="ant-col">
-                                                    <Button size="middle" htmlType="submit"
-                                                        type="primary" loading={this.state.loading}>Filtrar</Button>
-                                                </div>
+                                        </Row>
+                                        <div className="ant-row ant-row-end" style={{ marginTop: '30px' }}>
+                                            <div className="ant-col">
+                                                <Button size="middle" onClick={() => this.buscarIndividualApi()}
+                                                    type="primary" loading={this.state.loading}>Filtrar</Button>
                                             </div>
-                                        </form>
-                                    
+                                        </div>
+                                    </form>
+
                                 </Panel>
                             </Collapse>
                             <p></p>
-                            <Table columns={this.columns} dataSource={this.state.data} bordered scroll={{ x: 100 }} pagination={{
-                                showTotal: total =>
-                                    `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
-                                showQuickJumper: true,
-                                showSizeChanger: true,
-                            }} />
+                            <Table
+                                columns={this.columns}
+                                dataSource={this.state.data}
+                                bordered
+                                loading={this.state.loading}
+                                scroll={{ x: 100 }}
+                                pagination={{
+                                    ...this.state.pager,
+                                    showTotal: total =>
+                                        `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
+                                    showQuickJumper: true,
+                                    showSizeChanger: true,
+                                }}
+                                size="middle"
+                                onChange={(pagination) => { this.buscarIndividualApi(pagination.current, pagination.pageSize) }} />
                         </Col>
                     </Row>
                 </Grid>
