@@ -3,6 +3,7 @@ import { Link, useHistory } from 'react-router-dom';
 import { FiKey } from 'react-icons/fi';
 import api from '../../services/api';
 import './styles.css';
+import {Button, notification} from 'antd';
 
 import travelLogoImg from '../../assets/TravelLogo.png';
 import travelImg from '../../assets/TravelsWorld.png';
@@ -12,6 +13,7 @@ export default function Login() {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const history = useHistory();
     
@@ -22,7 +24,7 @@ export default function Login() {
             password,
         };
         e.preventDefault();
-        
+        setLoading(true);
         try {
            
             const response = await api.post('login', data);
@@ -32,7 +34,21 @@ export default function Login() {
             history.push('/admin');   
             
         } catch (error) {
-            alert('Usuário ou senha inválidos');
+            if (error.response){
+                if (error.response.data.status === 401){
+                    notification.error({
+                        message: "Erro de autenticação",
+                        description: "Usuário ou senha inválidos"
+                    });
+                }
+            } else {
+                notification.error({
+                    message: "Serviço indisponível",
+                    description: "Tente novamente mais tarde"
+                });
+            }
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -53,7 +69,7 @@ export default function Login() {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                     />
-                    <button className="button" type="submit">Entrar</button>
+                    <Button className="button" type="primary" size="large" htmlType="submit" loading={loading}>Entrar</Button>
                     <Link className="back-link" to="/forgetPassword">
                         <FiKey size={16} color="#E02041" />
                     Recuperar a senha
