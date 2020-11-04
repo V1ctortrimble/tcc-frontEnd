@@ -160,8 +160,8 @@ class PassengerList extends Component {
 
     populaCamposDesativar() {
         this.dataPassenger = {
-            active: false,
             individual: {
+                active: false,
                 cpf: this.removeMascaraCpf(this.state.cpfParaDesativar)
             }
         }
