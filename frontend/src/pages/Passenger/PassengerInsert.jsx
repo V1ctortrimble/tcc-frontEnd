@@ -13,7 +13,7 @@ class PassengerInsert extends Component {
 
   state = {
     loadingAvancar: false,
-    idPassageiro: "",
+    idPassageiro: null,
     cpf: "",
     nome: "",
     sobreNome: "",
@@ -35,7 +35,6 @@ class PassengerInsert extends Component {
         }
       })
       this.popularCamposPassageiroEdit(passageiro);
-      console.log(passageiro);
     }
   }
 
@@ -60,23 +59,45 @@ class PassengerInsert extends Component {
     e.preventDefault();
     this.setState({ loadingAvancar: true })
 
-    try {
-      this.popularCamposPassageiroPost();
-      console.log(this.dataPassenger);
-      const response = await api.post('api/persons/individual', this.dataPassenger);
-      console.log(response);
-      notification.success({
-        message: `Passageiro(a) cadastrado com sucesso`,
-      });
-      this.limpaCamposPassageiro();
-    }
-    catch (error) {
-      notification.error({
-        message: 'Não foi possível salvar passageiro'
-      });
-      console.log(error)
-    } finally {
-      this.setState({ loadingAvancar: false })
+    if (this.state.idPassageiro !== null) {
+      console.log("Passei aqui!")
+      try {
+        this.popularCamposPassageiroPost();
+        await api.put('api/persons/individual/', this.dataPassenger, {
+          params: {
+            cpf: this.state.cpf
+          },
+        });
+        notification.success({
+          message: `Passageiro(a) atualizado com sucesso`,
+        });
+        this.limpaCamposPassageiro();
+        this.props.history.push(`/admin/Passenger/Passengerlist.jsx`)
+      } catch (error) {
+        notification.error({
+          message: 'Não foi possível atualizar passageiro',
+          description: `Motivo: ${error.response.data.message}`
+        });
+      } finally {
+        this.setState({ loadingAvancar: false })
+      }
+    } else {
+      try {
+        this.popularCamposPassageiroPost();
+        await api.post('api/persons/individual', this.dataPassenger);
+        notification.success({
+          message: `Passageiro(a) cadastrado com sucesso`,
+        });
+        this.limpaCamposPassageiro();
+      }
+      catch (error) {
+        notification.error({
+          message: 'Não foi possível salvar passageiro',
+          description: `Motivo: ${error.response.data.message}`
+        });
+      } finally {
+        this.setState({ loadingAvancar: false })
+      }
     }
   }
 

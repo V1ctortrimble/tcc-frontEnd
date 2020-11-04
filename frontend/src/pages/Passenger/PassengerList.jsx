@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
-import { Button, Table, Collapse, notification } from "antd";
+import { Button, Table, Collapse, notification, Modal } from "antd";
 import InputMask from "react-input-mask";
 import 'antd/dist/antd.css';
-import { EditFilled } from '@ant-design/icons';
+import { EditFilled, DeleteFilled } from '@ant-design/icons';
 import api from "services/api";
 import moment from 'moment';
 import { cpf } from "cpf-cnpj-validator";
@@ -54,8 +54,10 @@ class PassengerList extends Component {
             key: 'operation',
             fixed: 'right',
             width: 80,
-            render: (x) =>
-                <Button onClick={() => this.alterarPassageiro(x)} type="primary" size="small"><EditFilled /></Button>
+            render: (x) => <div>
+                <Button onClick={() => this.alterarPassageiro(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+                <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><DeleteFilled /></Button>
+            </div>
         },
     ];
 
@@ -71,15 +73,60 @@ class PassengerList extends Component {
         sobreNome: "",
         rg: "",
         loading: false,
+        visible: false,
+        cpfParaDesativar: ""
     }
+
+    dataPassenger = {};
 
     handleClick = () => {
         this.props.history.push("/admin/Passenger/PassengerInsert.jsx")
     }
 
+    showModal = (x) => {
+        let cpf = x.cpf;
+        this.setState({
+            cpfParaDesativar: cpf,
+            visible: true,
+        });
+    };
+
+    confirmarModal = () => {
+        this.desativaPassageiro();
+        this.setState({
+            visible: false,
+        });
+    };
+
+    cancelarModal = () => {
+        this.setState({
+            visible: false,
+        });
+    };
+
     alterarPassageiro(x) {
         let cpf = this.removeMascaraCpf(x.cpf);
         this.props.history.push(`/admin/Passenger/PassengerInsert/${cpf}`)
+    }
+
+    async desativaPassageiro() {
+        try {
+            this.populaCamposDesativar();
+            await api.put('api/persons/individual/', this.dataPassenger, {
+                params: {
+                    cpf: this.removeMascaraCpf(this.state.cpfParaDesativar)
+                },
+            });
+            notification.warning({
+                message: `Passageiro(a) apagado com sucesso`,
+            });
+            this.buscarIndividualApi();
+        } catch (error) {
+            notification.error({
+                message: `Algo de errado aconteceu`,
+                description: `Motivo: ${error.response.data.message}`
+            });
+        }
     }
 
     validaCpf(cpfValidar) {
@@ -111,6 +158,15 @@ class PassengerList extends Component {
         return texto.replace(/[^a-zA-Z0-9]/g, '');
     }
 
+    populaCamposDesativar() {
+        this.dataPassenger = {
+            active: false,
+            individual: {
+                cpf: this.removeMascaraCpf(this.state.cpfParaDesativar)
+            }
+        }
+    }
+
     onChange = (event) => {
         const state = Object.assign({}, this.state);
         const field = event.target.name;
@@ -131,7 +187,7 @@ class PassengerList extends Component {
                     lastname: this.state.sobreNome,
                     rg: this.state.rg,
                     sort: 'nameIndividual,asc'
-                },  
+                },
             });
             data.data.content.forEach((item, index) => {
                 x.push({
@@ -171,6 +227,24 @@ class PassengerList extends Component {
         return (
             <div className="content">
                 <Grid fluid>
+                    <Modal
+                        title="Confirmação"
+                        visible={this.state.visible}
+                        onOk={this.confirmarModal}
+                        onCancel={this.cancelarModal}
+                        okText="Confirmar"
+                        cancelText="Cancelar"
+                        centered
+                    >
+                        <div className="col-md-12" style={{textAlign: 'center'}}>
+                        Tem certeza que deseja excluir o 
+                        </div>
+                        <div className="col-md-12" style={{textAlign: 'center'}}>
+                        passageiro CPF: {this.state.cpfParaDesativar} ?
+                        </div>
+                        <p></p>
+                       <p></p>
+                    </Modal>
                     <Row>
                         <Col md={12}>
                             <Button onClick={this.handleClick} className="ant-btn-primary">Novo</Button>
