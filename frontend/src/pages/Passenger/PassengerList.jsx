@@ -118,7 +118,7 @@ class PassengerList extends Component {
                 },
             });
             notification.warning({
-                message: `Passageiro(a) apagado com sucesso`,
+                message: `Passageiro(a) excluido com sucesso`,
             });
             this.buscarIndividualApi();
         } catch (error) {
