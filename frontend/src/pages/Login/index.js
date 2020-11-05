@@ -28,6 +28,8 @@ export default function Login() {
         try {
            
             const response = await api.post('login', data);
+
+            localStorage.setItem('token', '');
             
             localStorage.setItem('token', response.data.authorization);
 
