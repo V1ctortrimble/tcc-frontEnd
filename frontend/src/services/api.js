@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const USER_TOKEN = localStorage.getItem('token')
-const baseURL = 'http://localhost:8080/'
+const baseURL = 'http://ghtravelsystem.ddns.net:8080/'
 
 const api = axios.create({
 

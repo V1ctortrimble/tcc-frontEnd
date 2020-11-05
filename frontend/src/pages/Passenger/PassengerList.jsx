@@ -1,63 +1,84 @@
 import React, { Component } from "react";
 import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
-import { Button, Table, Collapse, notification, Modal } from "antd";
+import { Button, Table, Collapse, notification, Modal, Tag, Select } from "antd";
 import InputMask from "react-input-mask";
 import 'antd/dist/antd.css';
-import { EditFilled, DeleteFilled } from '@ant-design/icons';
+import { EditFilled, UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons';
 import api from "services/api";
 import moment from 'moment';
 import { cpf } from "cpf-cnpj-validator";
 
 const { Panel } = Collapse;
+const { Option } = Select;
 
 class PassengerList extends Component {
 
     columns = [
         {
             title: 'CPF',
-            width: 150,
+            width: 120,
             dataIndex: 'cpf',
             key: 'cpf',
             fixed: 'left',
         },
         {
             title: 'Nome',
-            width: 200,
+            width: 120,
             dataIndex: 'name',
             key: 'name',
             fixed: 'left',
         },
         {
             title: 'Sobrenome',
-            width: 200,
+            width: 120,
             dataIndex: 'sobrenome',
             key: 'sobrenome',
             fixed: 'left',
         },
         {
             title: 'RG',
-            width: 150,
+            width: 120,
             dataIndex: 'rg',
             key: 'rg',
             fixed: 'left',
         },
         {
             title: 'Data Nascimento',
-            width: 150,
+            width: 90,
             dataIndex: 'datanasc',
             key: 'datanasc',
-            fixed: 'right',
+            fixed: 'left',
             align: 'center'
+        },
+        {
+            title: 'Status',
+            width: 100,
+            dataIndex: 'status',
+            key: 'status',
+            fixed: 'left',
+            align: 'center',
+            render: (text, record) => (
+                <Tag color={record.status ? "green" : "red"}
+                    key="status"
+                >
+                    {record.status ? "ATIVO" : "INATIVO"}
+                </Tag>
+            ),
         },
         {
             title: 'Ação',
             key: 'operation',
             fixed: 'right',
             width: 80,
-            render: (x) => <div>
-                <Button onClick={() => this.alterarPassageiro(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
-                <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><DeleteFilled /></Button>
-            </div>
+            render: (x) => {
+                return x.status ?
+                    (<div>
+                        <Button onClick={() => this.alterarPassageiro(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+                        <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><UserDeleteOutlined /></Button>
+                    </div>) : <div>
+                        <Button className="ant-btn-personalized" onClick={() => this.ativarPassageiro(x)} type="primary" size="small" style={{ marginRight: '5%' }}><UserAddOutlined /></Button>
+                    </div>
+            }
         },
     ];
 
@@ -74,7 +95,19 @@ class PassengerList extends Component {
         rg: "",
         loading: false,
         visible: false,
-        cpfParaDesativar: ""
+        cpfParaDesativar: "",
+        cpfParaAtivar: "",
+        status: true,
+        statusOpcoes: [
+            {
+                valor: true,
+                descricao: "Ativo",
+            },
+            {
+                valor: false,
+                descricao: "Inativo",
+            }
+        ]
     }
 
     dataPassenger = {};
@@ -109,6 +142,27 @@ class PassengerList extends Component {
         this.props.history.push(`/admin/Passenger/PassengerInsert/${cpf}`)
     }
 
+    async ativarPassageiro(x) {
+        let cpf = this.removeMascaraCpf(x.cpf);
+        try {
+            this.populaCamposAtivar(cpf);
+            await api.put('api/persons/individual/', this.dataPassenger, {
+                params: {
+                    cpf: cpf
+                },
+            });
+            notification.success({
+                message: `Passageiro(a) ativado com sucesso`,
+            });
+            this.buscarIndividualApi();
+        } catch (error) {
+            notification.error({
+                message: `Algo de errado aconteceu`,
+                description: `Motivo: ${error.response.data.message}`
+            });
+        }
+    }
+
     async desativaPassageiro() {
         try {
             this.populaCamposDesativar();
@@ -118,7 +172,7 @@ class PassengerList extends Component {
                 },
             });
             notification.warning({
-                message: `Passageiro(a) excluido com sucesso`,
+                message: `Passageiro(a) desativado com sucesso`,
             });
             this.buscarIndividualApi();
         } catch (error) {
@@ -158,6 +212,15 @@ class PassengerList extends Component {
         return texto.replace(/[^a-zA-Z0-9]/g, '');
     }
 
+    populaCamposAtivar(cpf) {
+        this.dataPassenger = {
+            individual: {
+                active: true,
+                cpf: cpf
+            }
+        }
+    }
+
     populaCamposDesativar() {
         this.dataPassenger = {
             individual: {
@@ -172,6 +235,7 @@ class PassengerList extends Component {
         const field = event.target.name;
         state[field] = event.target.value;
         this.setState(state);
+        console.log(this.state);
     }
 
     async buscarIndividualApi(current = 1, size = 10) {
@@ -186,7 +250,8 @@ class PassengerList extends Component {
                     name: this.state.nome,
                     lastname: this.state.sobreNome,
                     rg: this.state.rg,
-                    sort: 'nameIndividual,asc'
+                    sort: 'nameIndividual,asc',
+                    active: this.state.status
                 },
             });
             data.data.content.forEach((item, index) => {
@@ -196,7 +261,8 @@ class PassengerList extends Component {
                     name: item.name_individual,
                     sobrenome: item.last_name,
                     rg: item.rg,
-                    datanasc: moment(item.birth_date).format("DD/MM/YYYY")
+                    datanasc: moment(item.birth_date).format("DD/MM/YYYY"),
+                    status: item.active
                 })
             })
             this.setState({ data: x });
@@ -236,14 +302,14 @@ class PassengerList extends Component {
                         cancelText="Cancelar"
                         centered
                     >
-                        <div className="col-md-12" style={{textAlign: 'center'}}>
-                        Tem certeza que deseja excluir o 
+                        <div className="col-md-12" style={{ textAlign: 'center' }}>
+                            Tem certeza que deseja desativar o
                         </div>
-                        <div className="col-md-12" style={{textAlign: 'center'}}>
-                        passageiro CPF: {this.state.cpfParaDesativar} ?
+                        <div className="col-md-12" style={{ textAlign: 'center' }}>
+                            passageiro CPF: {this.state.cpfParaDesativar} ?
                         </div>
                         <p></p>
-                       <p></p>
+                        <p></p>
                     </Modal>
                     <Row>
                         <Col md={12}>
@@ -253,7 +319,7 @@ class PassengerList extends Component {
                                 <Panel header="Filtros" key="1">
                                     <form name="formFilterPassenger">
                                         <Row>
-                                            <div className="col-md-3">
+                                            <div className="col-md-2">
                                                 <ControlLabel>CPF</ControlLabel>
                                                 <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
                                                     type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
@@ -271,11 +337,36 @@ class PassengerList extends Component {
                                                     type="text" className="form-control"
                                                     placeholder="da Silva" onChange={this.onChange} />
                                             </div>
-                                            <div className="col-md-3">
+                                            <div className="col-md-2">
                                                 <ControlLabel>RG</ControlLabel>
                                                 <input name="rg" value={this.state.rg}
                                                     type="text" className="form-control"
                                                     placeholder="9999999" onChange={this.onChange} />
+                                            </div>
+                                            <div className="col-md-2">
+                                                <ControlLabel>Status</ControlLabel>
+                                                <Row>
+                                                    <Select
+                                                        style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '100px' }}
+                                                        showSearch
+                                                        name="status"
+                                                        placeholder="Status"
+                                                        onChange={(value) => this.setState({ status: value })}
+                                                        optionFilterProp="children"
+                                                        filterOption={(input, option) =>
+                                                            option.children
+                                                                .toLowerCase()
+                                                                .indexOf(input.toLowerCase()) >= 0
+                                                        }
+                                                        defaultValue={true}
+                                                    >
+                                                        {this.state.statusOpcoes.map((item) => (
+                                                            <Option value={item.valor} key={item.valor}>
+                                                                {item.descricao}
+                                                            </Option>
+                                                        ))}
+                                                    </Select>
+                                                </Row>
                                             </div>
                                         </Row>
                                         <div className="ant-row ant-row-end" style={{ marginTop: '30px' }}>

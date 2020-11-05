@@ -36,6 +36,11 @@ form input {
     border-radius: 5px !important;
 }
 
+.ant-btn-personalized {
+    background: #008000 !important;
+    border-color: #008000 !important;
+}
+
 .ant-col{
     padding-left: 8px; 
     padding-right: 8px;
