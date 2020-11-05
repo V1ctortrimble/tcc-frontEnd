@@ -6,7 +6,7 @@ import './styles.css';
 import {Button, notification} from 'antd';
 
 import travelLogoImg from '../../assets/TravelLogo.png';
-import travelImg from '../../assets/TravelsWorld.png';
+import travelImg from '../../assets/TravelsWorld.gif';
 
 
 export default function Login() {
