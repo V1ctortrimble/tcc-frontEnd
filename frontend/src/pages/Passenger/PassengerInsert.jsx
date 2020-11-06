@@ -140,7 +140,7 @@ class PassengerInsert extends Component {
 
   limpaCamposPassageiro() {
     this.setState({
-      idPassageiro: "",
+      idPassageiro: null,
       cpf: "",
       nome: "",
       sobreNome: "",
@@ -148,7 +148,7 @@ class PassengerInsert extends Component {
       dataNasc: "",
       telefone: "",
       celular: "",
-      cellWhats: "",
+      cellWhats: true,
       email: "",
     })
   }
