@@ -197,19 +197,19 @@ class PassengerInsert extends Component {
                     <div className="col-md-3">
                       <ControlLabel>Nome</ControlLabel>
                       <input name="nome" value={this.state.nome}
-                        type="text" className="form-control"
+                        type="text" className="form-control" maxLength='50'
                         placeholder="José" required onChange={this.onChange} />
                     </div>
                     <div className="col-md-3">
                       <ControlLabel>Sobrenome</ControlLabel>
                       <input name="sobreNome" value={this.state.sobreNome}
-                        type="text" className="form-control"
+                        type="text" className="form-control" maxLength='100'
                         placeholder="da Silva" required onChange={this.onChange} />
                     </div>
                     <div className="col-md-3">
                       <ControlLabel>RG</ControlLabel>
                       <input name="rg" value={this.state.rg}
-                        type="text" className="form-control"
+                        type="text" className="form-control" maxLength='12'
                         placeholder="00000000" required onChange={this.onChange} />
                     </div>
                   </Row>
@@ -243,7 +243,7 @@ class PassengerInsert extends Component {
                     <div className="col-md-3">
                       <ControlLabel>Email</ControlLabel>
                       <input name="email" value={this.state.email}
-                        type="email" className="form-control"
+                        type="email" className="form-control" maxLength='80'
                         placeholder="xxxxxx@xxxxx.com" onChange={this.onChange} />
                     </div>
                   </Row>
