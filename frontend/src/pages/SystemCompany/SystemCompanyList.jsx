@@ -259,10 +259,17 @@ class SystemCompanyList extends Component {
       })
     } catch (error) {
       if (error.response) {
-        notification.warning({
-          message: "Aviso",
-          description: `Motivo: ${error.response.data.message}`
-        });
+        if (error.response.status === 403) {
+          notification.warning({
+              message: "Aviso",
+              description: `Motivo: Usuário não autorizado`
+          });
+      } else {
+          notification.warning({
+              message: "Aviso",
+              description: `Motivo: ${error.response.data.message}`
+          });
+      }
         this.setState({ data: "" });
       }
     } finally {
