@@ -1,7 +1,7 @@
 import { notification } from 'antd';
 import axios from 'axios';
 
-const baseURL = 'http://ghtravelsystem.ddns.net:8080/'
+const baseURL = 'http://localhost:8080/'
 
 const api = axios.create({
 
