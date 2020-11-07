@@ -187,12 +187,13 @@ class SystemCompanyInsert extends Component {
         this.popularCamposEmpresaSistemaEdit(empresaSistema);
 
       } catch (error) {
-        notification.error({
-          message: `Não foi possível carregar os dados para edição`,
-          description: `Motivo: ${error.response.data.message}`
-        })
+        if (error.response) {
+          notification.error({
+            message: `Não foi possível carregar os dados para edição`,
+            description: `Motivo: ${error.response.data.message}`
+          })
+        }
       }
-
       try {
         const sociosEmpresa = await api.get(`api/companyPartner`, {
           params: {
@@ -202,12 +203,13 @@ class SystemCompanyInsert extends Component {
         this.popularTabelaSocios(sociosEmpresa);
 
       } catch (error) {
-        notification.error({
-          message: `Não foi possível carregar os sócios`,
-          //description: `Motivo: ${error.response.data.message}`
-        })
+        if (error.response) {
+          notification.error({
+            message: `Não foi possível carregar os sócios`,
+            //description: `Motivo: ${error.response.data.message}`
+          })
+        }
       }
-      
     }
   }
 
@@ -259,10 +261,12 @@ class SystemCompanyInsert extends Component {
       this.nextStep();
     }
     catch (error) {
-      notification.error({
-        message: `Não foi possível Salvar Empresa`,
-        description: `Motivo: ${error.response.data.message}`
-      });
+      if (error.response) {
+        notification.error({
+          message: `Não foi possível Salvar Empresa`,
+          description: `Motivo: ${error.response.data.message}`
+        });
+      }
     } finally {
       this.setState({ loadingAvancar: false })
     }
@@ -283,10 +287,12 @@ class SystemCompanyInsert extends Component {
       this.limpaCamposSocio();
     }
     catch (error) {
-      notification.error({
-        message: 'Não foi possível Salvar Sócio',
-        description: `Motivo: ${error.response.data.message}`
-      });
+      if (error.response) {
+        notification.error({
+          message: 'Não foi possível Salvar Sócio',
+          description: `Motivo: ${error.response.data.message}`
+        });
+      }
     } finally {
       this.setState({ loadingAvancar: false })
     }
@@ -305,10 +311,12 @@ class SystemCompanyInsert extends Component {
       this.limpaCamposDadosBancarios();
     }
     catch (error) {
-      notification.error({
-        message: `Não foi possível Salvar dados Bancários`,
-        description: `Motivo: ${error.response.data.message}`
-      });
+      if (error.response) {
+        notification.error({
+          message: `Não foi possível Salvar dados Bancários`,
+          description: `Motivo: ${error.response.data.message}`
+        });
+      }
     } finally {
       this.setState({ loadingAvancar: false })
     }
@@ -342,15 +350,16 @@ class SystemCompanyInsert extends Component {
         this.setState({ desabilitarEndBairro: false })
       }
     } catch (error) {
-      console.log(error);
-      notification.error({
-        message: 'Falha ao consultar CEP',
-        description: 'Insira o endereço manualmente'
-      });
-      this.setState({
-        desabilitarCamposEndereco: false,
-        desabilitarEndBairro: false
-      })
+      if (error.response) {
+        notification.error({
+          message: 'Falha ao consultar CEP',
+          description: 'Insira o endereço manualmente'
+        });
+        this.setState({
+          desabilitarCamposEndereco: false,
+          desabilitarEndBairro: false
+        });
+      }
     } finally {
       this.setState({ loadingCep: false })
     }
@@ -384,15 +393,16 @@ class SystemCompanyInsert extends Component {
         this.setState({ desabilitarEndBairroSocio: false })
       }
     } catch (error) {
-      console.log(error);
-      notification.error({
-        message: 'Falha ao consultar CEP',
-        description: 'Insira o endereço manualmente'
-      });
-      this.setState({
-        desabilitarCamposEnderecoSocio: false,
-        desabilitarEndBairroSocio: false
-      })
+      if (error.response) {
+        notification.error({
+          message: 'Falha ao consultar CEP',
+          description: 'Insira o endereço manualmente'
+        });
+        this.setState({
+          desabilitarCamposEnderecoSocio: false,
+          desabilitarEndBairroSocio: false
+        });
+      }
     } finally {
       this.setState({ loadingCep: false })
     }
@@ -509,12 +519,12 @@ class SystemCompanyInsert extends Component {
         dataNascPartner: moment(item.birth_date).format("DD/MM/YYYY")
       })
     });
-    this.setState({data: x})
+    this.setState({ data: x })
   }
 
   popularTabelaDadosBancarios(dadosBancarios) {
     let y = [];
-    dadosBancarios.data.content.forEach((item, index) =>{
+    dadosBancarios.data.content.forEach((item, index) => {
       y.push({
         key: index,
         bank: item.bank_details.bank,
@@ -524,7 +534,7 @@ class SystemCompanyInsert extends Component {
         operacao: item.bank_details.operation
       })
     });
-    this.setState({dataBank: y})
+    this.setState({ dataBank: y })
   }
 
   popularCamposEmpresaConsultaCep = (data) => {

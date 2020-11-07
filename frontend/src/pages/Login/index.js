@@ -28,12 +28,10 @@ export default function Login() {
         try {
            
             const response = await api.post('login', data);
-
-            localStorage.setItem('token', '');
             
             localStorage.setItem('token', response.data.authorization);
 
-            history.push('/admin');   
+            history.push('/admin');
             
         } catch (error) {
             if (error.response){
@@ -43,6 +41,12 @@ export default function Login() {
                         description: "Usuário ou senha inválidos"
                     });
                 }
+                if (error.response.data.status === 403){
+                    notification.error({
+                        message: "Sessão inválida",
+                        description: "Faça o login novamente"
+                    });
+              } 
             } else {
                 notification.error({
                     message: "Serviço indisponível",

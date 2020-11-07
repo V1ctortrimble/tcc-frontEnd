@@ -156,10 +156,12 @@ class PassengerList extends Component {
             });
             this.buscarIndividualApi();
         } catch (error) {
-            notification.error({
-                message: `Algo de errado aconteceu`,
-                description: `Motivo: ${error.response.data.message}`
-            });
+            if (error.response) {
+                notification.error({
+                    message: `Algo de errado aconteceu`,
+                    description: `Motivo: ${error.response.data.message}`
+                });
+            }
         }
     }
 
@@ -176,10 +178,12 @@ class PassengerList extends Component {
             });
             this.buscarIndividualApi();
         } catch (error) {
-            notification.error({
-                message: `Algo de errado aconteceu`,
-                description: `Motivo: ${error.response.data.message}`
-            });
+            if (error.response) {
+                notification.error({
+                    message: `Algo de errado aconteceu`,
+                    description: `Motivo: ${error.response.data.message}`
+                });
+            }
         }
     }
 
@@ -238,14 +242,14 @@ class PassengerList extends Component {
         console.log(this.state);
     }
 
-    async buscarIndividualApi(current = 1, size = 10) {
+    async buscarIndividualApi(current = 0, size = 10) {
         this.setState({ loading: true });
         let x = [];
         try {
             const data = await api.get('api/persons/individual/filter', {
                 params: {
-                    pageNumber: current,
-                    pageSize: size,
+                    page: current,
+                    size: size,
                     cpf: this.removeMascaraCpf(this.state.cpf),
                     name: this.state.nome,
                     lastname: this.state.sobreNome,
@@ -268,18 +272,27 @@ class PassengerList extends Component {
             this.setState({ data: x });
             this.setState({
                 pager: {
-                    current: current,
-                    pageSize: size,
-                    total: data,
+                    current: data.data.pageNumber,
+                    pageSize: data.data.pageSize,
+                    total: data.data.totalElements,
                 }
             })
         } catch (error) {
-            console.log(error);
-            notification.warning({
-                message: "Aviso",
-                description: `Motivo: ${error.response.data.message}`
-            });
-            this.setState({ data: "" });
+            if (error.response) {
+                console.log(error);
+                notification.warning({
+                    message: "Aviso",
+                    description: `Motivo: ${error.response.data.message}`
+                });
+                this.setState({ data: "" });
+                this.setState({
+                    pager: {
+                        current: current,
+                        pageSize: size,
+                        total: '0',
+                    }
+                })
+            }
         } finally {
             this.setState({ loading: false });
         }
@@ -394,7 +407,7 @@ class PassengerList extends Component {
                                     showSizeChanger: true,
                                 }}
                                 size="middle"
-                                onChange={(pagination) => { this.buscarIndividualApi(pagination.current, pagination.pageSize) }} />
+                                onChange={(pagination) => { this.buscarIndividualApi((pagination.current - 1), pagination.pageSize) }} />
                         </Col>
                     </Row>
                 </Grid>

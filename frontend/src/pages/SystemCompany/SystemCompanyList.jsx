@@ -2,19 +2,11 @@ import React, { Component } from "react";
 import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
 import { Button, Table, Collapse, notification, Tag, Modal, Select } from "antd";
 import 'antd/dist/antd.css';
-import { EditFilled, CloseCircleOutlined , CheckCircleOutlined  } from '@ant-design/icons';
+import { EditFilled, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { cnpj } from "cpf-cnpj-validator";
 import InputMask from "react-input-mask";
 import api from '../../services/api';
 import moment from 'moment';
-
-//const [pager, setPager] = useState();
-
-/*setPager({
-current: 1,
-pageSize: 10,
-total: 100,
-});*/
 
 const { Panel } = Collapse;
 const { Option } = Select;
@@ -157,12 +149,14 @@ class SystemCompanyList extends Component {
       notification.success({
         message: `Empresa ativada com sucesso`,
       });
-      this.buscarIndividualApi();
+      this.buscarCompanyApi();
     } catch (error) {
-      notification.error({
-        message: `Algo de errado aconteceu`,
-        description: `Motivo: ${error.response.data.message}`
-      });
+      if (error.response) {
+        notification.error({
+          message: `Algo de errado aconteceu`,
+          description: `Motivo: ${error.response.data.message}`
+        });
+      }
     }
   }
 
@@ -179,10 +173,12 @@ class SystemCompanyList extends Component {
       });
       this.buscarIndividualApi();
     } catch (error) {
-      notification.error({
-        message: `Algo de errado aconteceu`,
-        description: `Motivo: ${error.response.data.message}`
-      });
+      if (error.response) {
+        notification.error({
+          message: `Algo de errado aconteceu`,
+          description: `Motivo: ${error.response.data.message}`
+        });
+      }
     }
   }
 
@@ -228,14 +224,14 @@ class SystemCompanyList extends Component {
     }
   }
 
-  async buscarCompanyApi(current = 1, size = 10) {
+  async buscarCompanyApi(current = 0, size = 10) {
     this.setState({ loading: true });
     let x = [];
     try {
       const data = await api.get('api/persons/company/filter', {
         params: {
-          pageNumber: current,
-          pageSize: size,
+          page: current,
+          size: size,
           cnpj: this.removeCaractEspecial(this.state.cnpj),
           socialreason: this.state.razaoSocial,
           fantasyname: this.state.nomeFantasia,
@@ -256,18 +252,19 @@ class SystemCompanyList extends Component {
       this.setState({ data: x });
       this.setState({
         pager: {
-          current: current,
-          pageSize: size,
-          total: data,
+          current: data.data.pageNumber,
+          pageSize: data.data.pageSize,
+          total: data.data.totalElements,
         }
       })
     } catch (error) {
-      console.log(error);
-      notification.warning({
-        message: "Aviso",
-        description: `Motivo: ${error.response.data.message}`
-      });
-      this.setState({ data: "" });
+      if (error.response) {
+        notification.warning({
+          message: "Aviso",
+          description: `Motivo: ${error.response.data.message}`
+        });
+        this.setState({ data: "" });
+      }
     } finally {
       this.setState({ loading: false });
     }
@@ -362,11 +359,14 @@ class SystemCompanyList extends Component {
               </Collapse>
               <p></p>
               <Table columns={this.columns} dataSource={this.state.data} bordered scroll={{ x: 100 }} pagination={{
+                ...this.state.pager,
                 showTotal: total =>
                   `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
                 showQuickJumper: true,
                 showSizeChanger: true,
-              }} />
+              }}
+                size="middle"
+                onChange={(pagination) => { this.buscarCompanyApi((pagination.current - 1), pagination.pageSize) }} />
             </Col>
           </Row>
         </Grid>

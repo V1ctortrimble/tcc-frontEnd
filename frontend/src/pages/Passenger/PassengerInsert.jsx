@@ -74,10 +74,12 @@ class PassengerInsert extends Component {
         this.limpaCamposPassageiro();
         this.props.history.push(`/admin/Passenger/Passengerlist.jsx`)
       } catch (error) {
-        notification.error({
-          message: 'Não foi possível atualizar passageiro',
-          description: `Motivo: ${error.response.data.message}`
-        });
+        if (error.response) {
+          notification.error({
+            message: 'Não foi possível atualizar passageiro',
+            description: `Motivo: ${error.response.data.message}`
+          });
+        }
       } finally {
         this.setState({ loadingAvancar: false })
       }
@@ -91,10 +93,12 @@ class PassengerInsert extends Component {
         this.limpaCamposPassageiro();
       }
       catch (error) {
-        notification.error({
-          message: 'Não foi possível salvar passageiro',
-          description: `Motivo: ${error.response.data.message}`
-        });
+        if (error.response) {
+          notification.error({
+            message: 'Não foi possível salvar passageiro',
+            description: `Motivo: ${error.response.data.message}`
+          });
+        }
       } finally {
         this.setState({ loadingAvancar: false })
       }
