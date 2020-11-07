@@ -279,7 +279,6 @@ class PassengerList extends Component {
             })
         } catch (error) {
             if (error.response) {
-                console.log(error);
                 notification.warning({
                     message: "Aviso",
                     description: `Motivo: ${error.response.data.message}`

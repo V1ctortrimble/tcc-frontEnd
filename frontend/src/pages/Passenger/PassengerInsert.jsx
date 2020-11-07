@@ -23,6 +23,7 @@ class PassengerInsert extends Component {
     cellWhats: true,
     telefone: "",
     email: "",
+    desativar: false,
   };
 
   dataPassenger = {};
@@ -139,6 +140,7 @@ class PassengerInsert extends Component {
       cellWhats: passageiro.data.contacts[0].cell_whats,
       telefone: passageiro.data.contacts[0].phone,
       email: passageiro.data.contacts[0].email,
+      desativar: true,
     })
   }
 
@@ -192,7 +194,7 @@ class PassengerInsert extends Component {
                       <ControlLabel>CPF</ControlLabel>
                       <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
                         type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
-                        placeholder="999.999.999-99" required onChange={this.onChange} />
+                        placeholder="999.999.999-99" required onChange={this.onChange} disabled={this.state.desativar} />
                     </div>
                     <div className="col-md-3">
                       <ControlLabel>Nome</ControlLabel>

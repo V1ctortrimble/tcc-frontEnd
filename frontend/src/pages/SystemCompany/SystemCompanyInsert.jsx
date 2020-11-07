@@ -134,6 +134,7 @@ class SystemCompanyInsert extends Component {
     cnpj: "",
     razaoSocial: "",
     nomeFantasia: "",
+    dataAbertura: "",
     telefone: "",
     celular: "",
     email: "",
@@ -426,7 +427,7 @@ class SystemCompanyInsert extends Component {
         active: true,
         cnpj: this.removeCaractEspecial(this.state.cnpj),
         fantasy_name: this.state.nomeFantasia,
-        open_date: "",
+        open_date: this.state.dataAbertura,
         social_reason: this.state.razaoSocial,
         state_regis: "",
       },
@@ -645,17 +646,23 @@ class SystemCompanyInsert extends Component {
                           type="text" className="form-control" onBlur={this.validaCnpj(this.state.cnpj)}
                           placeholder="00.000.000/0000-00" required onChange={this.onChange} />
                       </div>
-                      <div className="col-md-5">
+                      <div className="col-md-4">
                         <ControlLabel>Razão Social</ControlLabel>
                         <input name="razaoSocial" value={this.state.razaoSocial}
                           type="text" className="form-control"
                           placeholder="Razão Social" required onChange={this.onChange} />
                       </div>
-                      <div className="col-md-5">
+                      <div className="col-md-4">
                         <ControlLabel>Nome Fantasia</ControlLabel>
                         <input name="nomeFantasia" value={this.state.nomeFantasia}
                           type="text" className="form-control"
                           placeholder="Nome Fantasia" required onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-2">
+                        <ControlLabel>Data de Abertura</ControlLabel>
+                        <input name="dataAbertura" value={this.state.dataAbertura}
+                          type="date" className="form-control"
+                          placeholder="xx/xx/xxxx" required onChange={this.onChange} />
                       </div>
                     </Row>
                     <Row>
