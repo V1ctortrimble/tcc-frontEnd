@@ -61,7 +61,6 @@ class PassengerInsert extends Component {
     this.setState({ loadingAvancar: true })
 
     if (this.state.idPassageiro !== null) {
-      console.log("Passei aqui!")
       try {
         this.popularCamposPassageiroPost();
         await api.put('api/persons/individual/', this.dataPassenger, {

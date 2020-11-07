@@ -15,17 +15,17 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import Dashboard from "views/Dashboard.jsx";
-import UserProfile from "views/UserProfile.jsx";
+/*import Dashboard from "views/Dashboard.jsx";
 import TableList from "views/TableList.jsx";
 import Typography from "views/Typography.jsx";
 import Icons from "views/Icons.jsx";
 import Maps from "views/Maps.jsx";
 import Notifications from "views/Notifications.jsx";
-import UserLister from "pages/UserRegistration/UserLister";
 import UserRegistration from "pages/UserRegistration/UserRegistration";
-//import UserLister from "views/UserLister.jsx";
-import Upgrade from "views/Upgrade.jsx";
+import UserLister from "views/UserLister.jsx";
+import Upgrade from "views/Upgrade.jsx";*/
+import UserLister from "pages/UserRegistration/UserLister";
+import UserProfile from "views/UserProfile.jsx";
 import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
 import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
 import PassengerList from "pages/Passenger/PassengerList.jsx"
@@ -48,6 +48,29 @@ const dashboardRoutes = [
     component: SystemCompanyInsert,
     layout: "/admin",
     visibleOnMenu: false,
+  },
+  {
+    path: "/systemCompany/SystemCompanyInsert/:cnpj",
+    name: "Alterar Empresa do Sistema",
+    icon: "pe-7s-culture",
+    component: SystemCompanyInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/UserLister",
+    name: "Cadastro de Usuario",
+    icon: "pe-7s-users",
+    component: UserLister,
+    layout: "/admin"
+  },
+  {
+    path: "/user",
+    name: "Cadastro de Usuário",
+    icon: "pe-7s-user",
+    component: UserProfile,
+    layout: "/admin",
+    visibleOnMenu: true,
   },
   {
     path: "/Passenger/PassengerList.jsx",
@@ -73,34 +96,11 @@ const dashboardRoutes = [
     layout: "/admin",
     visibleOnMenu: false,
   },
-  {
-    path: "/systemCompany/SystemCompanyInsert/:cnpj",
-    name: "Alterar Empresa do Sistema",
-    icon: "pe-7s-culture",
-    component: SystemCompanyInsert,
-    layout: "/admin",
-    visibleOnMenu: false,
-  },
-  {
+ /* {
     path: "/dashboard",
     name: "Dashboard",
     icon: "pe-7s-graph",
     component: Dashboard,
-    layout: "/admin",
-    visibleOnMenu: true,
-  },
- {
-    path: "/UserLister",
-    name: "Cadastro de Usuario",
-    icon: "pe-7s-users",
-    component: UserLister,
-    layout: "/admin"
-  },
-  {
-    path: "/user",
-    name: "Cadastro de Usuário",
-    icon: "pe-7s-user",
-    component: UserProfile,
     layout: "/admin",
     visibleOnMenu: true,
   },
@@ -157,7 +157,7 @@ const dashboardRoutes = [
     component: Upgrade,
     layout: "/admin",
     visibleOnMenu: false,
-  },
+  },*/
 ];
 
 export default dashboardRoutes;

@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { Col, ControlLabel, Grid, Row } from "react-bootstrap";
 import InputMask from "react-input-mask";
-import { Steps, Table, notification, Button } from "antd";
+import { Steps, Table, notification, Button, Modal } from "antd";
 import 'antd/dist/antd.css';
 import Card from "components/Card/Card";
-import { EditFilled, DeleteFilled } from '@ant-design/icons';
+import { EditFilled, CloseCircleOutlined, CheckCircleOutlined, DeleteFilled } from '@ant-design/icons';
 import cep from 'cep-promise';
 import api from '../../services/api';
 import { cpf, cnpj } from "cpf-cnpj-validator";
@@ -48,9 +48,15 @@ class SystemCompanyInsert extends Component {
       key: 'operation',
       fixed: 'right',
       width: 100,
-      render: () => <div> <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>
-        <a href="/admin"><Button type="primary" danger size="small"><DeleteFilled /></Button> </a>
-      </div>
+      render: (x) => {
+        return x.active ?
+          (<div>
+            <Button onClick={() => this.alterarSocioEmpresaSistema(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+            <Button onClick={() => this.showModalSocio(x)} type="primary" danger size="small"><CloseCircleOutlined /></Button>
+          </div>) : <div>
+            <Button className="ant-btn-personalized" onClick={() => this.ativarSocioEmpresaSistema(x)} type="primary" size="small" style={{ marginRight: '5%' }}><CheckCircleOutlined /></Button>
+          </div>
+      }
     },
   ];
 
@@ -58,8 +64,8 @@ class SystemCompanyInsert extends Component {
     {
       title: 'Banco',
       width: 50,
-      dataIndex: 'bank',
-      key: 'bank',
+      dataIndex: 'banco',
+      key: 'banco',
       fixed: 'left',
     },
     {
@@ -95,42 +101,32 @@ class SystemCompanyInsert extends Component {
       key: 'operation',
       fixed: 'right',
       width: 50,
-      render: () => <div> <a href="/admin"><Button type="primary" size="small"><EditFilled /></Button> </a>
-        <a href="/admin"><Button type="primary" danger size="small"><DeleteFilled /></Button> </a>
-      </div>
+      render: (y) => {
+        return y.active ?
+          (<div>
+            <Button onClick={() => this.alterarContaEmpresaSistema(y)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+            <Button onClick={() => this.showModalDadosBancarios(y)} type="primary" danger size="small"><DeleteFilled /></Button>
+          </div>) : <div>
+            <Button className="ant-btn-personalized" onClick={() => this.ativarContaEmpresaSistema(y)} type="primary" size="small" style={{ marginRight: '5%' }}><CheckCircleOutlined /></Button>
+          </div>
+      }
     },
   ];
 
-  data = [
-    {
-      key: '1',
-      cpf: '000.000.000-00',
-      namePartner: 'José',
-      sobreNomePartner: "Da Silva",
-      dataNascPartner: "01/01/1900"
-    },
-  ];
-
-  dataBank = [
-    {
-      key: '1',
-      bank: 'Caixa',
-      agencia: '0175',
-      conta: '1425',
-      digito: '3',
-      operacao: '013',
-    },
-  ];
 
   state = {
     current: 0,
     loadingCep: false,
     loadingAvancar: false,
+    desabilitarCampoCnpj: false,
     desabilitarEndBairro: true,
     desabilitarCamposEndereco: true,
     desabilitarEndBairroSocio: true,
     desabilitarCamposEnderecoSocio: true,
-    idEmpresaSistema: "",
+    visibleSocio: false,
+    visibleDadosBancarios: false,
+    idEmpresaSistema: null,
+    active: "",
     cnpj: "",
     razaoSocial: "",
     nomeFantasia: "",
@@ -145,6 +141,8 @@ class SystemCompanyInsert extends Component {
     bairro: "",
     cidade: "",
     estado: "",
+    idSocio: null,
+    activeSocio: "",
     cpf: "",
     nome: "",
     sobreNome: "",
@@ -160,27 +158,32 @@ class SystemCompanyInsert extends Component {
     bairroSocio: "",
     cidadeSocio: "",
     estadoSocio: "",
+    idConta: null,
+    activeConta: "",
     banco: "",
     agencia: "",
     conta: "",
     digito: "",
     operacao: "",
+    agenciaDesativar: "",
+    contaDesativar: "",
+    dataPartner: [{}],
+    dataBank: [{}],
+    cpfParaDesativar: "",
   };
 
   dataCompany = {};
 
-  dataPartner = {};
+  dataBankDetails = {};
 
   dataCompanySystem = {};
 
   dataCompanyPartner = {};
 
-  dataBankDetails = {};
-
   async componentDidMount() {
     if (this.props.match.params.cnpj != null) {
       try {
-        const empresaSistema = await api.get(`api/persons/individual/`, {
+        const empresaSistema = await api.get(`api/persons/company/`, {
           params: {
             cnpj: this.props.match.params.cnpj
           }
@@ -196,23 +199,66 @@ class SystemCompanyInsert extends Component {
         }
       }
       try {
-        const sociosEmpresa = await api.get(`api/companyPartner`, {
-          params: {
-            cnpj: this.props.match.params.cnpj
-          }
-        })
-        this.popularTabelaSocios(sociosEmpresa);
-
+        this.recuperarSocios();
       } catch (error) {
         if (error.response) {
           notification.error({
             message: `Não foi possível carregar os sócios`,
-            //description: `Motivo: ${error.response.data.message}`
+          })
+        }
+      }
+      try {
+        this.recuperarDadosBancarios();
+      } catch (error) {
+        if (error.response) {
+          notification.error({
+            message: `Não foi possível carregar dados bancários`,
           })
         }
       }
     }
   }
+
+  showModalSocio = (x) => {
+    let cpf = x.cpf;
+    this.setState({
+      cpfParaDesativar: cpf,
+      visibleSocio: true,
+    });
+  };
+
+  showModalDadosBancarios = (y) => {
+    let idConta = y.idConta;
+    let agencia = y.agencia;
+    let conta = y.conta;
+    this.setState({
+      idConta: idConta,
+      agenciaDesativar: agencia,
+      contaDesativar: conta,
+      visibleDadosBancarios: true,
+    });
+  };
+
+  confirmarModalSocio = () => {
+    this.desativaSocio();
+    this.setState({
+      visibleSocio: false,
+    });
+  };
+
+  confirmarModalDadosBancarios = () => {
+    this.desativaContaBancaria();
+    this.setState({
+      visibleDadosBancarios: false,
+    });
+  };
+
+  cancelarModal = () => {
+    this.setState({
+      visibleSocio: false,
+      visibleDadosBancarios: false,
+    });
+  };
 
   removeCaractEspecial(texto) {
     return texto.replace(/[^a-zA-Z0-9]/g, '');
@@ -233,7 +279,6 @@ class SystemCompanyInsert extends Component {
 
   validaCnpj(cnpjValidar) {
     const cnpjLimpo = this.removeCaractEspecial(cnpjValidar);
-    console.log(cnpjLimpo)
     if (cnpjLimpo.length === 14) {
       if (cnpj.isValid(cnpjLimpo)) {
       } else {
@@ -241,7 +286,6 @@ class SystemCompanyInsert extends Component {
           message: `CNPJ ${cnpjValidar} é inválido, favor informar um CNPJ válido`,
         });
         this.setState({ cnpj: "" });
-        console.log(this.props)
       }
     }
   }
@@ -250,76 +294,148 @@ class SystemCompanyInsert extends Component {
 
     e.preventDefault();
     this.setState({ loadingAvancar: true })
-
-    try {
-      this.popularCamposEmpresaPost();
-      this.popularCamposEmpresaSistema();
-      await api.post('api/persons/company', this.dataCompany);
-      await api.post('api/companySystem', this.dataCompanySystem);
-      notification.success({
-        message: `Empresa do sistema cadastrado com sucesso`,
-      });
-      this.nextStep();
-    }
-    catch (error) {
-      if (error.response) {
-        notification.error({
-          message: `Não foi possível Salvar Empresa`,
-          description: `Motivo: ${error.response.data.message}`
+    if (this.state.idEmpresaSistema != null) {
+      try {
+        this.popularCamposEmpresaPost();
+        await api.put('api/persons/company', this.dataCompany, {
+          params: {
+            cnpj: this.props.match.params.cnpj,
+          }
+        })
+        notification.success({
+          message: `Empresa do sistema atualizada com sucesso`,
         });
+        this.nextStep();
+      } catch (error) {
+        if (error.response) {
+          notification.error({
+            message: `Não foi possível atualizar Empresa`,
+            description: `Motivo: ${error.response.data.message}`
+          });
+        }
+      } finally {
+        this.setState({ loadingAvancar: false })
       }
-    } finally {
-      this.setState({ loadingAvancar: false })
+    } else {
+
+      try {
+        this.popularCamposEmpresaPost();
+        this.popularCamposEmpresaSistema();
+        await api.post('api/persons/company', this.dataCompany);
+        await api.post('api/companySystem', this.dataCompanySystem);
+        notification.success({
+          message: `Empresa do sistema cadastrado com sucesso`,
+        });
+        this.nextStep();
+      }
+      catch (error) {
+        if (error.response) {
+          notification.error({
+            message: `Não foi possível Salvar Empresa`,
+            description: `Motivo: ${error.response.data.message}`
+          });
+        }
+      } finally {
+        this.setState({ loadingAvancar: false })
+      }
     }
   };
 
   savePartner = async (e) => {
     e.preventDefault();
     this.setState({ loadingAvancar: true })
-
-    try {
-      this.popularCamposSocioPost();
-      this.popularCamposSocioEmpresa();
-      await api.post('api/persons/individual', this.dataPartner);
-      await api.post('api/companyPartner', this.dataCompanyPartner);
-      notification.success({
-        message: `Sócio(a) adicionado com sucesso`,
-      });
-      this.limpaCamposSocio();
-    }
-    catch (error) {
-      if (error.response) {
-        notification.error({
-          message: 'Não foi possível Salvar Sócio',
-          description: `Motivo: ${error.response.data.message}`
+    if (this.state.idSocio != null) {
+      try {
+        this.popularCamposSocioPost();
+        await api.put('api/persons/individual', this.dataPartner, {
+          params: {
+            cpf: this.state.cpf,
+          }
         });
+        notification.success({
+          message: `Sócio(a) atualizado com sucesso`,
+        });
+        this.limpaCamposSocio();
+        this.recuperarSocios();
+      } catch (error) {
+        if (error.response) {
+          notification.error({
+            message: 'Não foi possível Salvar Sócio',
+            description: `Motivo: ${error.response.data.message}`
+          });
+        }
+      } finally {
+        this.setState({ loadingAvancar: false })
       }
-    } finally {
-      this.setState({ loadingAvancar: false })
+    } else {
+      try {
+        this.popularCamposSocioPost();
+        this.popularCamposSocioEmpresa();
+        await api.post('api/persons/individual', this.dataPartner);
+        await api.post('api/companyPartner', this.dataCompanyPartner);
+        notification.success({
+          message: `Sócio(a) adicionado com sucesso`,
+        });
+        this.limpaCamposSocio();
+        this.recuperarSocios();
+      }
+      catch (error) {
+        if (error.response) {
+          notification.error({
+            message: 'Não foi possível Salvar Sócio',
+            description: `Motivo: ${error.response.data.message}`
+          });
+        }
+      } finally {
+        this.setState({ loadingAvancar: false })
+      }
     }
   }
 
   saveBankDetails = async (e) => {
     e.preventDefault();
     this.setState({ loadingAvancar: true });
-
-    try {
-      this.popularCamposBancoPost();
-      await api.post('api/persons/bankDetails', this.dataBankDetails);
-      notification.success({
-        message: `Dados Bancários adicionado com sucesso`,
-      });
-      this.limpaCamposDadosBancarios();
-    }
-    catch (error) {
-      if (error.response) {
-        notification.error({
-          message: `Não foi possível Salvar dados Bancários`,
-          description: `Motivo: ${error.response.data.message}`
+    if (this.state.idConta != null) {
+      try {
+        this.popularCamposBancoPost();
+        await api.put('api/persons/bankDetails', this.dataBankDetails);
+        notification.success({
+          message: `Dados Bancários atualizados com sucesso`,
         });
+        this.limpaCamposDadosBancarios();
+        this.recuperarDadosBancarios();
       }
-    } finally {
-      this.setState({ loadingAvancar: false })
+      catch (error) {
+        if (error.response) {
+          notification.error({
+            message: `Não foi possível atualizar dados Bancários`,
+            description: `Motivo: ${error.response.data.message}`
+          });
+        }
+      } finally {
+        this.setState({ loadingAvancar: false })
+      }
+    } else {
+
+      try {
+        this.popularCamposBancoPost();
+        await api.post('api/persons/bankDetails', this.dataBankDetails);
+        notification.success({
+          message: `Dados Bancários adicionado com sucesso`,
+        });
+        this.limpaCamposDadosBancarios();
+        this.recuperarDadosBancarios();
+      }
+      catch (error) {
+        if (error.response) {
+          notification.error({
+            message: `Não foi possível Salvar dados Bancários`,
+            description: `Motivo: ${error.response.data.message}`
+          });
+        }
+      } finally {
+        this.setState({ loadingAvancar: false })
+      }
     }
   }
 
@@ -409,6 +525,129 @@ class SystemCompanyInsert extends Component {
     }
   };
 
+  async recuperarSocios() {
+    const sociosEmpresa = await api.get(`api/companyPartner`, {
+      params: {
+        cnpj: this.state.cnpj
+      }
+    })
+    this.popularTabelaSocios(sociosEmpresa);
+  }
+
+  async recuperarDadosBancarios() {
+    const dadosBancariosEmpresa = await api.get(`api/persons/bankDetails`, {
+      params: {
+        document: this.removeCaractEspecial(this.state.cnpj)
+      }
+    })
+    this.popularTabelaDadosBancarios(dadosBancariosEmpresa);
+  }
+
+  async alterarSocioEmpresaSistema(x) {
+    let cpf = this.removeCaractEspecial(x.cpf)
+    try {
+      const socioEmpresaSistema = await api.get(`api/persons/individual/`, {
+        params: {
+          cpf: cpf,
+        }
+      })
+      this.popularCamposSocioEdit(socioEmpresaSistema);
+    } catch (error) {
+      if (error.response) {
+        notification.error({
+          message: `Não foi possível carregar os dados para edição`,
+          description: `Motivo: ${error.response.data.message}`
+        })
+      }
+    }
+  }
+
+  async desativaSocio() {
+    try {
+      this.populaCamposSocioDesativar();
+      await api.put('api/companyPartner', this.dataCompanyPartner, {
+        params: {
+          cpf: this.removeCaractEspecial(this.state.cpfParaDesativar)
+        },
+      });
+      notification.warning({
+        message: `Socio desativado com sucesso`,
+      });
+      this.popularTabelaSocios();
+    } catch (error) {
+      if (error.response) {
+        notification.error({
+          message: `Algo de errado aconteceu`,
+          description: `Motivo: ${error.response.data.message}`
+        });
+      }
+    }
+  }
+
+  async ativarSocioEmpresaSistema(x) {
+
+  }
+
+  async ativarContaEmpresaSistema(y) {
+
+  }
+
+  async alterarContaEmpresaSistema(y) {
+    let idConta = y.idConta
+    try {
+      const contaEmpresaSistema = await api.get(`api/persons/bankDetails/`, {
+        params: {
+          document: this.removeCaractEspecial(this.state.cnpj),
+        }
+      })
+      this.popularCamposContaEdit(contaEmpresaSistema, idConta);
+    } catch (error) {
+      if (error.response) {
+        notification.error({
+          message: `Não foi possível carregar os dados para edição`,
+          description: `Motivo: ${error.response.data.message}`
+        })
+      }
+    }
+  }
+
+  async desativaContaBancaria() {
+    try {
+      this.populaCamposSocioDesativar();
+      await api.put('api/companyPartner', this.dataCompanyPartner, {
+        params: {
+          cpf: this.removeCaractEspecial(this.state.cpfParaDesativar)
+        },
+      });
+      notification.warning({
+        message: `Socio desativado com sucesso`,
+      });
+      this.popularTabelaSocios();
+    } catch (error) {
+      if (error.response) {
+        notification.error({
+          message: `Algo de errado aconteceu`,
+          description: `Motivo: ${error.response.data.message}`
+        });
+      }
+    }
+  }
+
+  populaCamposSocioDesativar() {
+    this.dataCompanyPartner = {
+      active: false,
+      cpf: this.removeCaractEspecial(this.state.cpfParaDesativar),
+      cnpj: this.removeCaractEspecial(this.state.cnpj)
+    }
+  }
+
+  populaCamposContaDesativar() {
+    this.dataBankDetails = {
+      active: false,
+      id_bank_details: this.state.idConta,
+    }
+  }
+
   popularCamposEmpresaPost() {
     this.dataCompany = {
       active: true,
@@ -483,6 +722,7 @@ class SystemCompanyInsert extends Component {
         account: this.state.conta,
         digit: this.state.digito,
         operation: this.state.operacao,
+        id_bank_details: this.state.idConta,
       },
       document: this.removeCaractEspecial(this.state.cnpj),
     }
@@ -504,35 +744,92 @@ class SystemCompanyInsert extends Component {
 
   popularCamposEmpresaSistemaEdit(empresaSistema) {
     this.setState({
-      idEmpresaSistema: empresaSistema.data.id_com_system,
-      cnpj: empresaSistema.data.cnpj,
+      active: empresaSistema.data.company.active,
+      idEmpresaSistema: empresaSistema.data.id_person,
+      cnpj: empresaSistema.data.company.cnpj,
+      razaoSocial: empresaSistema.data.company.social_reason,
+      nomeFantasia: empresaSistema.data.company.fantasy_name,
+      dataAbertura: empresaSistema.data.company.open_date,
+      telefone: empresaSistema.data.contacts[0].phone,
+      celular: empresaSistema.data.contacts[0].cell_phone,
+      email: empresaSistema.data.contacts[0].email,
+      cep: empresaSistema.data.adresses[0].zip_code,
+      endereco: empresaSistema.data.adresses[0].adress,
+      numero: empresaSistema.data.adresses[0].adress_number,
+      complemento: empresaSistema.data.adresses[0].additional,
+      bairro: empresaSistema.data.adresses[0].neighborhood,
+      cidade: empresaSistema.data.adresses[0].city,
+      estado: empresaSistema.data.adresses[0].state,
+      desabilitarCampoCnpj: true,
+    })
+  }
+
+  popularCamposSocioEdit(socio) {
+    this.setState({
+      activeSocio: socio.data.individual.active,
+      idSocio: socio.data.individual.id_individual,
+      cpf: socio.data.individual.cpf,
+      nome: socio.data.individual.name_individual,
+      sobreNome: socio.data.individual.last_name,
+      rg: socio.data.individual.rg,
+      dataNascSocio: socio.data.individual.birth_date,
+      telefoneSocio: socio.data.contacts[0].phone,
+      celularSocio: socio.data.contacts[0].cell_phone,
+      emailSocio: socio.data.contacts[0].email,
+      cepSocio: socio.data.adresses[0].zip_code,
+      enderecoSocio: socio.data.adresses[0].adress,
+      numeroSocio: socio.data.adresses[0].adress_number,
+      complementoSocio: socio.data.adresses[0].additional,
+      bairroSocio: socio.data.adresses[0].neighborhood,
+      cidadeSocio: socio.data.adresses[0].city,
+      estadoSocio: socio.data.adresses[0].state,
+    })
+  }
+
+  popularCamposContaEdit(dadosBancarios, idConta) {
+    dadosBancarios.data.forEach((item, index) => {
+      if (item.id_bank_details === idConta) {
+        this.setState({
+          key: index,
+          activeConta: item.active,
+          banco: item.bank,
+          agencia: item.agency,
+          conta: item.account,
+          digito: item.digit,
+          operacao: item.operation,
+          idConta: item.id_bank_details,
+        })
+      }
     })
   }
 
   popularTabelaSocios(sociosEmpresa) {
     let x = [];
-    sociosEmpresa.data.content.forEach((item, index) => {
+    sociosEmpresa.data.forEach((item, index) => {
       x.push({
         key: index,
+        active: item.active,
         cpf: item.cpf,
         namePartner: item.name_individual,
         sobreNomePartner: item.last_name,
         dataNascPartner: moment(item.birth_date).format("DD/MM/YYYY")
       })
     });
-    this.setState({ data: x })
+    this.setState({ dataPartner: x })
   }
 
   popularTabelaDadosBancarios(dadosBancarios) {
     let y = [];
-    dadosBancarios.data.content.forEach((item, index) => {
+    dadosBancarios.data.forEach((item, index) => {
       y.push({
         key: index,
-        bank: item.bank_details.bank,
-        agencia: item.bank_details.agency,
-        conta: item.bank_details.account,
-        digito: item.bank_details.digit,
-        operacao: item.bank_details.operation
+        active: item.active,
+        idConta: item.id_bank_details,
+        banco: item.bank,
+        agencia: item.agency,
+        conta: item.account,
+        digito: item.digit,
+        operacao: item.operation
       })
     });
     this.setState({ dataBank: y })
@@ -558,6 +855,7 @@ class SystemCompanyInsert extends Component {
 
   limpaCamposSocio() {
     this.setState({
+      idSocio: null,
       cpf: "",
       nome: "",
       sobreNome: "",
@@ -578,6 +876,7 @@ class SystemCompanyInsert extends Component {
 
   limpaCamposDadosBancarios() {
     this.setState({
+      idConta: null,
       banco: "",
       agencia: "",
       conta: "",
@@ -618,6 +917,42 @@ class SystemCompanyInsert extends Component {
       <div className="content">
         <Card content={
           <Grid fluid>
+            <Modal
+              title="Confirmação"
+              visible={this.state.visibleSocio}
+              onOk={this.confirmarModalSocio}
+              onCancel={this.cancelarModal}
+              okText="Confirmar"
+              cancelText="Cancelar"
+              centered
+            >
+              <div className="col-md-12" style={{ textAlign: 'center' }}>
+                Tem certeza que deseja desativar o
+                        </div>
+              <div className="col-md-12" style={{ textAlign: 'center' }}>
+                Socio(a) CPF: {this.state.cpfParaDesativar} ?
+                        </div>
+              <p></p>
+              <p></p>
+            </Modal>
+            <Modal
+              title="Confirmação"
+              visible={this.state.visibleDadosBancarios}
+              onOk={this.confirmarModalDadosBancarios}
+              onCancel={this.cancelarModal}
+              okText="Confirmar"
+              cancelText="Cancelar"
+              centered
+            >
+              <div className="col-md-12" style={{ textAlign: 'center' }}>
+                Tem certeza que deseja excluir os dados
+                        </div>
+              <div className="col-md-12" style={{ textAlign: 'center' }}>
+                Bancários Agencia: {this.state.agenciaDesativar} Conta: {this.state.contaDesativar}?
+                        </div>
+              <p></p>
+              <p></p>
+            </Modal>
             <Row>
               <>
                 <Steps
@@ -644,7 +979,7 @@ class SystemCompanyInsert extends Component {
                         <ControlLabel>CNPJ</ControlLabel>
                         <InputMask mask="99.999.999/9999-99" name="cnpj" value={this.state.cnpj}
                           type="text" className="form-control" onBlur={this.validaCnpj(this.state.cnpj)}
-                          placeholder="00.000.000/0000-00" required onChange={this.onChange} />
+                          placeholder="00.000.000/0000-00" required onChange={this.onChange} disabled={this.state.desabilitarCampoCnpj} />
                       </div>
                       <div className="col-md-4">
                         <ControlLabel>Razão Social</ControlLabel>
@@ -880,7 +1215,7 @@ class SystemCompanyInsert extends Component {
                     </div>
                   </form>
                   <div className="content">
-                    <Table columns={this.columns} dataSource={this.data} bordered scroll={{ x: 100 }} pagination={{
+                    <Table columns={this.columns} dataSource={this.state.dataPartner} bordered scroll={{ x: 100 }} pagination={{
                       showTotal: total =>
                         `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
                       showQuickJumper: true,
@@ -947,7 +1282,7 @@ class SystemCompanyInsert extends Component {
                     </div>
                   </form>
                   <div className="content">
-                    <Table columns={this.columnsBank} dataSource={this.dataBank} bordered scroll={{ x: 100 }} pagination={{
+                    <Table columns={this.columnsBank} dataSource={this.state.dataBank} bordered scroll={{ x: 100 }} pagination={{
                       showTotal: total =>
                         `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
                       showQuickJumper: true,
