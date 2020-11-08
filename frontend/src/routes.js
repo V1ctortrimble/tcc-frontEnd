@@ -15,17 +15,16 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import Dashboard from "views/Dashboard.jsx";
+/*import Dashboard from "views/Dashboard.jsx";
 import UserProfile from "views/UserProfile.jsx";
 import TableList from "views/TableList.jsx";
 import Typography from "views/Typography.jsx";
 import Icons from "views/Icons.jsx";
 import Maps from "views/Maps.jsx";
 import Notifications from "views/Notifications.jsx";
-import UserLister from "pages/UserRegistration/UserLister";
-import UserRegistration from "pages/UserRegistration/UserRegistration";
-//import UserLister from "views/UserLister.jsx";
-import Upgrade from "views/Upgrade.jsx";
+import Upgrade from "views/Upgrade.jsx";*/
+import UserList from "pages/User/UserList";
+import UserInsert from "pages/User/UserInsert";
 import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
 import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
 import PassengerList from "pages/Passenger/PassengerList.jsx"
@@ -81,26 +80,27 @@ const dashboardRoutes = [
     layout: "/admin",
     visibleOnMenu: false,
   },
-  {
-    path: "/dashboard",
-    name: "Dashboard",
-    icon: "pe-7s-graph",
-    component: Dashboard,
-    layout: "/admin",
-    visibleOnMenu: true,
-  },
  {
-    path: "/UserLister",
-    name: "Cadastro de Usuario",
+    path: "/UserList",
+    name: "Usuários do Sistema",
     icon: "pe-7s-users",
-    component: UserLister,
-    layout: "/admin"
+    component: UserList,
+    layout: "/admin",
+    visibleOnMenu: true
   },
   {
     path: "/user",
     name: "Cadastro de Usuário",
     icon: "pe-7s-user",
-    component: UserProfile,
+    component: UserInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+ /* {
+    path: "/dashboard",
+    name: "Dashboard",
+    icon: "pe-7s-graph",
+    component: Dashboard,
     layout: "/admin",
     visibleOnMenu: true,
   },
@@ -157,7 +157,7 @@ const dashboardRoutes = [
     component: Upgrade,
     layout: "/admin",
     visibleOnMenu: false,
-  },
+  },*/
 ];
 
 export default dashboardRoutes;
