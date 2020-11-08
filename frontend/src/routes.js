@@ -23,9 +23,10 @@ import Maps from "views/Maps.jsx";
 import Notifications from "views/Notifications.jsx";
 import UserRegistration from "pages/UserRegistration/UserRegistration";
 import UserLister from "views/UserLister.jsx";
-import Upgrade from "views/Upgrade.jsx";*/
-import UserLister from "pages/UserRegistration/UserLister";
-import UserProfile from "views/UserProfile.jsx";
+import Upgrade from "views/Upgrade.jsx";
+import UserProfile from "views/UserProfile.jsx";*/
+import UserList from "pages/User/UserList";
+import UserInsert from "pages/User/UserInsert";
 import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
 import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
 import PassengerList from "pages/Passenger/PassengerList.jsx"
@@ -58,19 +59,28 @@ const dashboardRoutes = [
     visibleOnMenu: false,
   },
   {
-    path: "/UserLister",
-    name: "Cadastro de Usuario",
-    icon: "pe-7s-users",
-    component: UserLister,
-    layout: "/admin"
+    path: "/User/UserList.jsx",
+    name: "Usuários do Sistema",
+    icon: "pe-7s-user",
+    component: UserList,
+    layout: "/admin",
+    visibleOnMenu: true
   },
   {
-    path: "/user",
-    name: "Cadastro de Usuário",
+    path: "/User/UserInsert.jsx",
+    name: "Cadastro do Usuário",
     icon: "pe-7s-user",
-    component: UserProfile,
+    component: UserInsert,
     layout: "/admin",
-    visibleOnMenu: true,
+    visibleOnMenu: false,
+  },
+  {
+    path: "/User/UserInsert/:username",
+    name: "Alterar Usuário",
+    icon: "pe-7s-user",
+    component: UserInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
   },
   {
     path: "/Passenger/PassengerList.jsx",
@@ -96,7 +106,16 @@ const dashboardRoutes = [
     layout: "/admin",
     visibleOnMenu: false,
   },
- /* {
+ /* 
+ {
+    path: "/user",
+    name: "Cadastro de Usuário",
+    icon: "pe-7s-user",
+    component: UserProfile,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
+ {
     path: "/dashboard",
     name: "Dashboard",
     icon: "pe-7s-graph",

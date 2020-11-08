@@ -224,6 +224,10 @@ class UserProfile extends Component {
     console.log(state);
   }
 
+  toBackList = () => {
+    this.props.history.push("/admin/User/UserList.jsx")
+  }
+
   render() {
 
     return (
