@@ -138,10 +138,10 @@ class SystemCompanyList extends Component {
   }
 
   async ativarEmpresaSistema(x) {
-    let cnpj = this.removeMascaraCpf(x.cnpj);
+    let cnpj = this.removeCaractEspecial(x.cnpj);
     try {
       this.populaCamposAtivar(cnpj);
-      await api.put('api/persons/individual/', this.dataPassenger, {
+      await api.put('api/persons/company/', this.dataCompany, {
         params: {
           cnpj: cnpj
         },
@@ -163,7 +163,7 @@ class SystemCompanyList extends Component {
   async desativaEmpresaSistema() {
     try {
       this.populaCamposDesativar();
-      await api.put('api/persons/individual/', this.dataPassenger, {
+      await api.put('api/persons/company/', this.dataCompany, {
         params: {
           cnpj: this.removeCaractEspecial(this.state.cnpjParaDesativar)
         },
@@ -171,7 +171,7 @@ class SystemCompanyList extends Component {
       notification.warning({
         message: `Empresa desativada com sucesso`,
       });
-      this.buscarIndividualApi();
+      this.buscarCompanyApi();
     } catch (error) {
       if (error.response) {
         notification.error({
