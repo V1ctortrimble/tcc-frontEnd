@@ -47,6 +47,8 @@ class UserProfile extends Component {
 
   dataUser = {};
 
+  idCompanySystem = {};
+
   limpaCamposUsuario() {
     this.setState({
       idUsuario: null,
@@ -90,7 +92,6 @@ class UserProfile extends Component {
       })
     } else {
       this.setState({ loading: true })
-      this.getIdEmpresa(this.removeCaractEspecial(this.state.empresaSistema.cnpj))
       if (this.state.idUsuario !== null) {
         try {
           this.popularCamposUsuarioPost();
@@ -121,8 +122,6 @@ class UserProfile extends Component {
           notification.success({
             message: `Usuario(a) cadastrado com sucesso`,
           });
-          console.log(this.state);
-          console.log(this.dataUser);
           this.limpaCamposUsuario();
         }
         catch (error) {
@@ -217,12 +216,17 @@ class UserProfile extends Component {
 
   async getIdEmpresa(cnpj) {
     if (this.state.empresaSistema.cnpj !== null){
-      const empresa = await api.get(`/api/persons/company/${cnpj}`);
+      const empresa = await api.get(`/api/persons/company/`, {
+        params: {
+          cnpj: cnpj,
+        }
+      });
       this.setState({
         empresaSistema: {
+          cnpj: cnpj,
           idEmpresa: empresa.data.id_person,
         }
-      })
+      }) 
     }
   }
 
@@ -266,11 +270,7 @@ class UserProfile extends Component {
                         required
                         name="empresa"
                         placeholder="Empresa"
-                        onChange={(value) => this.setState({
-                          empresaSistema: {
-                            cnpj: value,
-                          }
-                        })}
+                        onChange={(value) => this.getIdEmpresa(value)}
                         optionFilterProp="children"
                         filterOption={(input, option) =>
                           option.children
