@@ -45,6 +45,7 @@ class AdminNavbarLinks extends Component {
             <p className="hidden-lg hidden-md">Dashboard</p>
           </NavItem>
           <NavDropdown
+          className="hidden-lg hidden-md"
             eventKey={2}
             title={notification}
             noCaret

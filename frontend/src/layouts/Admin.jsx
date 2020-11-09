@@ -111,7 +111,7 @@ class Admin extends Component {
         }
       }
     }
-    return "Brand";
+    return "Inicio";
   };
   handleImageClick = image => {
     this.setState({ image: image });
