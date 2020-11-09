@@ -24,7 +24,7 @@ class UserProfile extends Component {
     idUsuario: null,
     email: "",
     senha: "",
-    confirmarSenha: "",
+    confirmarPass: "",
     nome: "",
     sobrenome: "",
     dataNasc: "",
@@ -41,8 +41,8 @@ class UserProfile extends Component {
       {
         cnpjEmpresa: "",
         nomeFantasia: "",
-    }
-  ],
+      }
+    ],
   };
 
   dataUser = {};
@@ -52,7 +52,7 @@ class UserProfile extends Component {
       idUsuario: null,
       email: "",
       senha: "",
-      confirmarSenha: "",
+      confirmarPass: "",
       nome: "",
       sobrenome: "",
       dataNasc: "",
@@ -83,13 +83,14 @@ class UserProfile extends Component {
 
   saveUser = async (e) => {
     e.preventDefault();
-    if (this.state.senha !== this.state.confirmarSenha) {
+    if (this.state.senha !== this.state.confirmarPass) {
       notification.warning({
         message: 'Favor verificar',
         description: 'Senhas digitadas não conferem',
       })
     } else {
       this.setState({ loading: true })
+      this.getIdEmpresa(this.removeCaractEspecial(this.state.empresaSistema.cnpj))
       if (this.state.idUsuario !== null) {
         try {
           this.popularCamposUsuarioPost();
@@ -120,17 +121,19 @@ class UserProfile extends Component {
           notification.success({
             message: `Usuario(a) cadastrado com sucesso`,
           });
+          console.log(this.state);
+          console.log(this.dataUser);
           this.limpaCamposUsuario();
         }
         catch (error) {
           if (error.response) {
             notification.error({
-              message: 'Não foi possível salvar passageiro',
+              message: 'Não foi possível salvar usuário',
               description: `Motivo: ${error.response.data.message}`
             });
           }
         } finally {
-          this.setState({ loadingAvancar: false })
+          this.setState({ loadingAvancar: false })  
         }
       }
     }
@@ -160,7 +163,7 @@ class UserProfile extends Component {
         rg: this.state.rg
       },
       password: this.state.senha,
-      repeat_password: this.state.confirmarSenha,
+      repeat_password: this.state.confirmarPass,
       username: this.state.email,
     }
   };
@@ -186,14 +189,14 @@ class UserProfile extends Component {
     })
   }
 
-  popularEmpresas(empresas){
-    let emp =[]
+  popularEmpresas(empresas) {
+    let emp = []
     empresas.data.content.forEach((item, index) => {
       emp.push({
         cnpjEmpresa: item.cnpj,
         nomeFantasia: item.fantasy_name,
       })
-    }); 
+    });
     this.setState({
       empresas: emp,
     })
@@ -212,6 +215,17 @@ class UserProfile extends Component {
     this.popularEmpresas(empresas);
   }
 
+  async getIdEmpresa(cnpj) {
+    if (this.state.empresaSistema.cnpj !== null){
+      const empresa = await api.get(`/api/persons/company/${cnpj}`);
+      this.setState({
+        empresaSistema: {
+          idEmpresa: empresa.data.id_person,
+        }
+      })
+    }
+  }
+
   onChangeCheckbox = (event) => {
     this.setState({ admin: event.target.checked });
   }
@@ -221,7 +235,10 @@ class UserProfile extends Component {
     const field = event.target.name;
     state[field] = event.target.value;
     this.setState(state);
-    console.log(state);
+  }
+
+  onChangePassword = (event) => {
+    this.setState({confirmarPass: event.target.value})
   }
 
   toBackList = () => {
@@ -241,16 +258,19 @@ class UserProfile extends Component {
               <Col md={12}>
                 <form name="formUsuario" onSubmit={this.saveUser}>
                   <Row>
-                  <div className="col-md-2">
+                    <div className="col-md-2">
                       <ControlLabel>Selecionar Empresa</ControlLabel>
                       <Select
                         style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '200px' }}
                         showSearch
+                        required
                         name="empresa"
                         placeholder="Empresa"
-                        onChange={(value) => this.setState({ empresaSistema: {
-                          cnpj: value,
-                        }})}
+                        onChange={(value) => this.setState({
+                          empresaSistema: {
+                            cnpj: value,
+                          }
+                        })}
                         optionFilterProp="children"
                         filterOption={(input, option) =>
                           option.children
@@ -317,7 +337,8 @@ class UserProfile extends Component {
                       <ControlLabel>Username</ControlLabel>
                       <input name="email" value={this.state.email}
                         type="email" className="form-control" required
-                        placeholder="Exemplo@gmail.com" onChange={this.onChange} />
+                        placeholder="Exemplo@gmail.com" onChange={this.onChange}
+                        title="Username deve ser um e-mail válido da pessoa" />
                     </div>
                     <div className="col-md-3">
                       <ControlLabel>Senha</ControlLabel>
@@ -328,14 +349,14 @@ class UserProfile extends Component {
                         title="Digite uma senha com letras (Maiuscula e Minuscula), números e caracteres especiais (#@$!), mínimo de 8 caracteres." />
                     </div>
                     <div className="col-md-3">
-                      <ControlLabel>Confirmar</ControlLabel>
-                      <input name="ConfirmarSenha" value={this.state.confirmarSenha}
+                      <ControlLabel>Confirmar Senha</ControlLabel>
+                      <input name="confirmarSenha" value={this.state.confirmarPass}
                         type="password" className="form-control" required
-                        placeholder="Confirme a senha" onChange={this.onChange}
+                        placeholder="Confirme a senha" onChange={this.onChangePassword}
                         pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$"
                         title="Digite uma senha com letras (Maiuscula e Minuscula), números e caracteres especiais (#@$!), mínimo de 8 caracteres." />
                     </div>
-                    
+
                     <div className="col-md-1">
                       <ControlLabel align="center">Admin?</ControlLabel>
                       <div align="left" style={{ marginTop: '20px', marginBottom: '10px', marginLeft: '12px' }}>

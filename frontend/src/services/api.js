@@ -28,6 +28,7 @@ const api = axios.create({
               description: "Faça login novamente"
           })
           localStorage.setItem('token','');
+          setTimeout(() => window.location.reload(), 2000);
           return error;     
       }
       return Promise.reject(error);

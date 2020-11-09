@@ -68,7 +68,7 @@ const dashboardRoutes = [
   },
   {
     path: "/User/UserInsert.jsx",
-    name: "Cadastro do Usuário",
+    name: "Cadastro de Usuário",
     icon: "pe-7s-user",
     component: UserInsert,
     layout: "/admin",

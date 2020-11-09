@@ -72,10 +72,10 @@ class UserList extends Component {
       render: (x) => {
         return x.status ?
           (<div>
-            <Button onClick={() => this.alterarPassageiro(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+            <Button onClick={() => this.alterarUsuario(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
             <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><UserDeleteOutlined /></Button>
           </div>) : <div>
-            <Button className="ant-btn-personalized" onClick={() => this.ativarPassageiro(x)} type="primary" size="small" style={{ marginRight: '5%' }}><UserAddOutlined /></Button>
+            <Button className="ant-btn-personalized" onClick={() => this.ativarUsuario(x)} type="primary" size="small" style={{ marginRight: '5%' }}><UserAddOutlined /></Button>
           </div>
       }
     },
@@ -86,12 +86,12 @@ class UserList extends Component {
     pager: {
       current: 1,
       pageSize: 10,
-      total: 3,
+      total: "",
     },
+    username: "",
     cpf: "",
     nome: "",
     sobreNome: "",
-    rg: "",
     loading: false,
     visible: false,
     usernameParaDesativar: "",
@@ -159,7 +159,7 @@ class UserList extends Component {
 
   alterarUsuario(x) {
     let username = x.username;
-    this.props.history.push(`/admin/Passenger/PassengerInsert/username=${username}`)
+    this.props.history.push(`/admin/User/UserInsert/${username}`)
   }
 
   async ativarUsuario(x) {
@@ -188,9 +188,9 @@ class UserList extends Component {
   async desativaUsuario() {
     try {
       this.populaCamposDesativar();
-      await api.put('api/persons/individual/', this.dataPassenger, {
+      await api.put('api/user', this.dataUser, {
         params: {
-          cpf: this.removeMascaraCpf(this.state.cpfParaDesativar)
+          username: this.state.usernameParaDesativar
         },
       });
       notification.warning({
@@ -216,6 +216,23 @@ class UserList extends Component {
     }
   }
 
+  populaCamposDesativar() {
+    this.dataUser = {
+      individual: {
+        active: false,
+      },
+      username: this.state.usernameParaDesativar,
+    }
+  }
+
+  onChange = (event) => {
+    const state = Object.assign({}, this.state);
+    const field = event.target.name;
+    state[field] = event.target.value;
+    this.setState(state);
+    console.log(this.state);
+}
+
   async buscarUsersApi(current = 0, size = 10) {
     this.setState({ loading: true });
     let x = [];
@@ -239,7 +256,7 @@ class UserList extends Component {
           cpf: this.mascaraCpf(item.individual.cpf),
           name: item.individual.name_individual,
           sobrenome: item.individual.last_name,
-          admin: item.admin ? "Sim": "Não",
+          admin: item.admin ? "Sim" : "Não",
           status: item.individual.active
         })
       });
@@ -312,15 +329,15 @@ class UserList extends Component {
               <p></p>
               <Collapse>
                 <Panel header="Filtros" key="1">
-                  <form name="formFilterPassenger">
+                  <form name="formFilterUser">
                     <Row>
-                      <div className="col-md-2">
-                        <ControlLabel>CPF</ControlLabel>
-                        <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
-                          type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
-                          placeholder="999.999.999-99" onChange={this.onChange} />
-                      </div>
                       <div className="col-md-3">
+                        <ControlLabel>Username</ControlLabel>
+                        <input name="username" value={this.state.username}
+                          type="text" className="form-control"
+                          placeholder="xxxxxxx@xxxxx.xxx" onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-2">
                         <ControlLabel>Nome</ControlLabel>
                         <input name="nome" value={this.state.nome}
                           type="text" className="form-control"
@@ -333,10 +350,10 @@ class UserList extends Component {
                           placeholder="da Silva" onChange={this.onChange} />
                       </div>
                       <div className="col-md-2">
-                        <ControlLabel>RG</ControlLabel>
-                        <input name="rg" value={this.state.rg}
-                          type="text" className="form-control"
-                          placeholder="9999999" onChange={this.onChange} />
+                        <ControlLabel>CPF</ControlLabel>
+                        <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
+                          type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
+                          placeholder="999.999.999-99" onChange={this.onChange} />
                       </div>
                       <div className="col-md-2">
                         <ControlLabel>Status</ControlLabel>
@@ -366,7 +383,7 @@ class UserList extends Component {
                     </Row>
                     <div className="ant-row ant-row-end" style={{ marginTop: '30px' }}>
                       <div className="ant-col">
-                        <Button size="middle" onClick={() => this.buscarIndividualApi()}
+                        <Button size="middle" onClick={() => this.buscarUsersApi()}
                           type="primary" loading={this.state.loading}>Filtrar</Button>
                       </div>
                     </div>
