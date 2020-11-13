@@ -365,7 +365,9 @@ class SystemCompanyList extends Component {
                 </Panel>
               </Collapse>
               <p></p>
-              <Table columns={this.columns} dataSource={this.state.data} bordered scroll={{ x: 100 }} pagination={{
+              <Table columns={this.columns} dataSource={this.state.data}
+              loading={this.state.loading} 
+              bordered scroll={{ x: 100 }} pagination={{
                 ...this.state.pager,
                 showTotal: total =>
                   `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,

@@ -22,6 +22,8 @@ class UserProfile extends Component {
     active: true,
     loading: false,
     idUsuario: null,
+    idContato: null,
+    senhaRequerida: true,
     email: "",
     senha: "",
     confirmarPass: "",
@@ -34,13 +36,20 @@ class UserProfile extends Component {
     celular: "",
     admin: false,
     empresaSistema: {
-      cnpj: "",
-      idEmpresa: null,
+      cnpj: null,
+      empresa: {
+        children: null,
+        key: null,
+        value: null,
+      },
     },
+    cnpj: null,
     empresas: [
       {
-        cnpjEmpresa: "",
-        nomeFantasia: "",
+        cnpjEmpresa: null,
+        nomeFantasia: null,
+        idCompanySystem: null,
+        razaoSocial: null,
       }
     ],
   };
@@ -52,6 +61,7 @@ class UserProfile extends Component {
   limpaCamposUsuario() {
     this.setState({
       idUsuario: null,
+      idContato: null,
       email: "",
       senha: "",
       confirmarPass: "",
@@ -63,6 +73,10 @@ class UserProfile extends Component {
       telefone: "",
       celular: "",
       admin: false,
+      empresaSistema: {
+        cnpj: null,
+        empresa: null,
+      },
     })
   }
 
@@ -91,7 +105,7 @@ class UserProfile extends Component {
         description: 'Senhas digitadas não conferem',
       })
     } else {
-      this.setState({ loading: true })
+      this.setState({ loading: true });
       if (this.state.idUsuario !== null) {
         try {
           this.popularCamposUsuarioPost();
@@ -122,6 +136,7 @@ class UserProfile extends Component {
           notification.success({
             message: `Usuario(a) cadastrado com sucesso`,
           });
+          console.log(this.dataUser);
           this.limpaCamposUsuario();
         }
         catch (error) {
@@ -132,28 +147,30 @@ class UserProfile extends Component {
             });
           }
         } finally {
-          this.setState({ loadingAvancar: false })  
+          this.setState({ loadingAvancar: false })
         }
       }
     }
   }
   popularCamposUsuarioPost() {
     this.dataUser = {
+      active: this.state.active,
       admin: this.state.admin,
       company_system: {
         cnpj: this.state.empresaSistema.cnpj,
-        id_company_system: this.state.empresaSistema.idEmpresa,
+        id_company_system: this.state.empresaSistema.empresa.key,
       },
-      contacts: [
-        {
-          cell_phone: this.removeCaractEspecial(this.state.celular),
-          email: this.state.email,
-          phone: this.removeCaractEspecial(this.state.telefone),
-          cell_whats: false
-        }
-      ],
+      contact:
+      {
+        cell_phone: this.removeCaractEspecial(this.state.celular),
+        email: this.state.email,
+        phone: this.removeCaractEspecial(this.state.telefone),
+        cell_whats: false,
+        id_contact: this.state.idContato
+      }
+      ,
       individual: {
-        active: this.state.active,
+        active: true,
         birth_date: this.state.dataNasc,
         cpf: this.removeCaractEspecial(this.state.cpf),
         id_individual: this.state.idUsuario,
@@ -170,30 +187,36 @@ class UserProfile extends Component {
 
   popularCamposUsuarioEdit(usuario) {
     this.setState({
-      active: usuario.data.individual.active,
+      active: usuario.data.active,
       idUsuario: usuario.data.individual.id_individual,
       nome: usuario.data.individual.name_individual,
       cpf: usuario.data.individual.cpf,
       sobreNome: usuario.data.individual.last_name,
       rg: usuario.data.individual.rg,
       dataNasc: usuario.data.individual.birth_date,
-      celular: usuario.data.contacts[0].cell_phone,
-      telefone: usuario.data.contacts[0].phone,
+      celular: usuario.data.contact.cell_phone,
+      telefone: usuario.data.contact.phone,
       email: usuario.data.username,
+      idContato: usuario.data.contact.id_contact,
       admin: usuario.data.admin,
+      senhaRequerida: false,
       empresaSistema: {
         cnpj: usuario.data.company_system.cnpj,
-        idEmpresa: usuario.data.company_system.id_company_system,
+        empresa: {
+          key: usuario.data.company_system.id_company_system,
+        } 
       },
     })
   }
 
   popularEmpresas(empresas) {
     let emp = []
-    empresas.data.content.forEach((item, index) => {
+    empresas.data.forEach((item, index) => {
       emp.push({
         cnpjEmpresa: item.cnpj,
         nomeFantasia: item.fantasy_name,
+        idCompanySystem: item.id_company_system,
+        razaoSocial: item.social_reason,
       })
     });
     this.setState({
@@ -210,28 +233,13 @@ class UserProfile extends Component {
       });
       this.popularCamposUsuarioEdit(usuario);
     }
-    const empresas = await api.get('/api/persons/company/filter');
+    const empresas = await api.get('/api/companySystem');
     this.popularEmpresas(empresas);
-  }
-
-  async getIdEmpresa(cnpj) {
-    if (this.state.empresaSistema.cnpj !== null){
-      const empresa = await api.get(`/api/persons/company/`, {
-        params: {
-          cnpj: cnpj,
-        }
-      });
-      this.setState({
-        empresaSistema: {
-          cnpj: cnpj,
-          idEmpresa: empresa.data.id_person,
-        }
-      }) 
-    }
   }
 
   onChangeCheckbox = (event) => {
     this.setState({ admin: event.target.checked });
+    console.log(this.state)
   }
 
   onChange = (event) => {
@@ -242,7 +250,7 @@ class UserProfile extends Component {
   }
 
   onChangePassword = (event) => {
-    this.setState({confirmarPass: event.target.value})
+    this.setState({ confirmarPass: event.target.value })
   }
 
   toBackList = () => {
@@ -268,9 +276,14 @@ class UserProfile extends Component {
                         style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '200px' }}
                         showSearch
                         required
+                        value={this.state.empresaSistema.cnpj}
                         name="empresa"
                         placeholder="Empresa"
-                        onChange={(value) => this.getIdEmpresa(value)}
+                        onChange={(value, key) =>
+                          this.setState({empresaSistema: {
+                          cnpj: value,
+                          empresa: key }})
+                        }
                         optionFilterProp="children"
                         filterOption={(input, option) =>
                           option.children
@@ -279,7 +292,7 @@ class UserProfile extends Component {
                         }
                       >
                         {this.state.empresas.map((item) => (
-                          <Option value={item.cnpjEmpresa} key={item.cnpjEmpresa}>
+                          <Option value={item.cnpjEmpresa} key={item.idCompanySystem}>
                             {item.nomeFantasia}
                           </Option>
                         ))}
@@ -343,7 +356,7 @@ class UserProfile extends Component {
                     <div className="col-md-3">
                       <ControlLabel>Senha</ControlLabel>
                       <input name="senha" value={this.state.senha}
-                        type="password" className="form-control" required
+                        type="password" className="form-control" required={this.state.senhaRequerida}
                         placeholder="senha" onChange={this.onChange}
                         pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$"
                         title="Digite uma senha com letras (Maiuscula e Minuscula), números e caracteres especiais (#@$!), mínimo de 8 caracteres." />
@@ -351,7 +364,7 @@ class UserProfile extends Component {
                     <div className="col-md-3">
                       <ControlLabel>Confirmar Senha</ControlLabel>
                       <input name="confirmarSenha" value={this.state.confirmarPass}
-                        type="password" className="form-control" required
+                        type="password" className="form-control" required={this.state.senhaRequerida}
                         placeholder="Confirme a senha" onChange={this.onChangePassword}
                         pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$"
                         title="Digite uma senha com letras (Maiuscula e Minuscula), números e caracteres especiais (#@$!), mínimo de 8 caracteres." />
@@ -372,7 +385,7 @@ class UserProfile extends Component {
                     </Button>
                     </div>
                     <div className="ant-col">
-                      <Button type="primary" size="middle" htmlType="submit" loading={this.state.loadingAvancar}>
+                      <Button type="primary" size="middle" htmlType="submit" loading={this.state.loading}>
                         Salvar
                     </Button>
                     </div>

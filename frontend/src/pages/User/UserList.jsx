@@ -237,19 +237,19 @@ class UserList extends Component {
     this.setState({ loading: true });
     let x = [];
     try {
-      const data = await api.get('api/users/all') /*, {
+      const data = await api.get('api/users/filter' , {
         params: {
           page: current,
           size: size,
-          cpf: this.removeMascaraCpf(this.state.cpf),
+          cpf: this.removeCaractEspecial(this.state.cpf),
           name: this.state.nome,
           lastname: this.state.sobreNome,
-          rg: this.state.rg,
-          sort: 'nameIndividual,asc',
+          username: this.state.username,
+          //sort: 'nameIndividual,asc',
           active: this.state.status
         },
-      });*/
-      data.data.forEach((item, index) => {
+      });
+      data.data.content.forEach((item, index) => {
         x.push({
           key: index,
           username: item.username,
@@ -257,17 +257,17 @@ class UserList extends Component {
           name: item.individual.name_individual,
           sobrenome: item.individual.last_name,
           admin: item.admin ? "Sim" : "Não",
-          status: item.individual.active
+          status: item.active
         })
       });
       this.setState({ data: x });
-      /*this.setState({
+      this.setState({
          pager: {
-           current: current,
-           pageSize: size,
-           total: data,
+          current: data.data.pageNumber,
+          pageSize: data.data.pageSize,
+          total: data.data.totalElements,
          }
-       })*/
+       })
     } catch (error) {
       if (error.response) {
         if (error.response.status === 403) {
