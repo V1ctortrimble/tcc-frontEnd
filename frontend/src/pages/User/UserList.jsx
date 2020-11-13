@@ -209,18 +209,14 @@ class UserList extends Component {
 
   populaCamposAtivar(username) {
     this.dataUser = {
-      individual: {
-        active: true,
-      },
+      active: true,
       username: username,
     }
   }
 
   populaCamposDesativar() {
     this.dataUser = {
-      individual: {
-        active: false,
-      },
+      active: false,
       username: this.state.usernameParaDesativar,
     }
   }
@@ -231,13 +227,13 @@ class UserList extends Component {
     state[field] = event.target.value;
     this.setState(state);
     console.log(this.state);
-}
+  }
 
   async buscarUsersApi(current = 0, size = 10) {
     this.setState({ loading: true });
     let x = [];
     try {
-      const data = await api.get('api/users/filter' , {
+      const data = await api.get('api/users/filter', {
         params: {
           page: current,
           size: size,
@@ -262,12 +258,12 @@ class UserList extends Component {
       });
       this.setState({ data: x });
       this.setState({
-         pager: {
+        pager: {
           current: data.data.pageNumber,
           pageSize: data.data.pageSize,
           total: data.data.totalElements,
-         }
-       })
+        }
+      })
     } catch (error) {
       if (error.response) {
         if (error.response.status === 403) {
