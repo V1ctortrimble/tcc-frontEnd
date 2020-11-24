@@ -8,12 +8,18 @@ import api from '../../services/api';
 import NotificationSystem from "react-notification-system";
 import { style } from "variables/Variables.jsx";
 import { cpf } from "cpf-cnpj-validator";
+import cep from 'cep-promise';
 
 class PassengerInsert extends Component {
 
   state = {
+    desabilitarEndBairro: true,
+    desabilitarCamposEndereco: true,
+    loadingCep: false,
     loadingAvancar: false,
     idPassageiro: null,
+    idContato: null,
+    idEndereco: null,
     cpf: "",
     nome: "",
     sobreNome: "",
@@ -23,6 +29,13 @@ class PassengerInsert extends Component {
     cellWhats: true,
     telefone: "",
     email: "",
+    cep: null,
+    endereco: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
     desativar: false,
   };
 
@@ -55,6 +68,58 @@ class PassengerInsert extends Component {
       }
     }
   }
+
+  popularCamposConsultaCep = (data) => {
+    this.setState({
+      endereco: data.street,
+      bairro: data.neighborhood,
+      cidade: data.city,
+      estado: data.state
+    })
+  };
+
+  enderecoCep = async () => {
+    const cepIn = this.removeCaractEspecial(this.state.cep);
+    this.setState({
+      desabilitarCamposEndereco: true,
+      desabilitarEndBairro: true
+    })
+    if (cepIn.length !== 8) {
+      notification.error({
+        message: 'CEP informado é inválido.',
+        description: 'Favor inserir um Cep, com 8 números'
+      });
+      return;
+    }
+    this.setState({ loadingCep: true });
+    try {
+      const enderecoCompleto = await cep(cepIn);
+
+      if (enderecoCompleto) {
+        this.popularCamposConsultaCep(enderecoCompleto);
+      }
+      if (!enderecoCompleto.street) {
+        notification.warning({
+          message: 'Cep consultado com avisos',
+          description: 'Cep geral, favor inserir Endereço e Bairro'
+        });
+        this.setState({ desabilitarEndBairro: false })
+      }
+    } catch (error) {
+      if (error.response) {
+        notification.error({
+          message: 'Falha ao consultar CEP',
+          description: 'Insira o endereço manualmente'
+        });
+        this.setState({
+          desabilitarCamposEndereco: false,
+          desabilitarEndBairro: false
+        });
+      }
+    } finally {
+      this.setState({ loadingCep: false })
+    }
+  };
 
   savePassenger = async (e) => {
     e.preventDefault();
@@ -109,12 +174,23 @@ class PassengerInsert extends Component {
 
     this.dataPassenger = {
       active: true,
+      adresses: [{
+        additional: this.state.complemento,
+        adress: this.state.endereco,
+        adress_number: this.state.numero,
+        city: this.state.cidade,
+        neighborhood: this.state.bairro,
+        state: this.state.estado,
+        zip_code: this.state.cep,
+        id_adress: this.state.idEndereco
+      }],
       contacts: [
         {
           cell_phone: this.removeCaractEspecial(this.state.celular),
           email: this.state.email,
           phone: this.removeCaractEspecial(this.state.telefone),
-          cell_whats: this.state.cellWhats
+          cell_whats: this.state.cellWhats,
+          id_contact: this.state.idContato
         }
       ],
       individual: {
@@ -122,12 +198,24 @@ class PassengerInsert extends Component {
         cpf: this.removeCaractEspecial(this.state.cpf),
         last_name: this.state.sobreNome,
         name_individual: this.state.nome,
-        rg: this.state.rg
+        rg: this.state.rg,
+        id_individual: this.state.idPassageiro
       }
     }
   };
 
   popularCamposPassageiroEdit(passageiro) {
+    if (passageiro.data.adresses[0]) {
+      this.setState({
+        cep: passageiro.data.adresses[0].zip_code,
+        endereco: passageiro.data.adresses[0].adress,
+        numero: passageiro.data.adresses[0].adress_number,
+        complemento: passageiro.data.adresses[0].additional,
+        bairro: passageiro.data.adresses[0].neighborhood,
+        cidade: passageiro.data.adresses[0].city,
+        estado: passageiro.data.adresses[0].state,
+      })
+    }
     this.setState({
       idPassageiro: passageiro.data.id_person,
       cpf: passageiro.data.individual.cpf,
@@ -146,6 +234,8 @@ class PassengerInsert extends Component {
   limpaCamposPassageiro() {
     this.setState({
       idPassageiro: null,
+      idContato: null,
+      idEndereco: null,
       cpf: "",
       nome: "",
       sobreNome: "",
@@ -155,6 +245,13 @@ class PassengerInsert extends Component {
       celular: "",
       cellWhats: true,
       email: "",
+      cep: "",
+      endereco: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
     })
   }
 
@@ -246,6 +343,62 @@ class PassengerInsert extends Component {
                       <input name="email" value={this.state.email}
                         type="email" className="form-control" maxLength='80'
                         placeholder="xxxxxx@xxxxx.com" onChange={this.onChange} />
+                    </div>
+                  </Row>
+                  <Row>
+                    <div className="col-md-3">
+                      <ControlLabel>CEP</ControlLabel>
+                      <InputMask name="cep" className="form-control" value={this.state.cep}
+                        placeholder="00000-000" type="text" mask="99999-999"
+                        required onChange={this.onChange} />
+                    </div>
+                    <div className="col-md-2" style={{ marginTop: '38px', marginBottom: '38px' }}>
+                      <Button style={{ height: '35%' }} onClick={this.enderecoCep} size="middle"
+                        type="primary" loading={this.state.loadingCep}>Consultar Cep</Button>
+                    </div>
+                  </Row>
+                  <Row>
+                    <div className="col-md-6">
+                      <ControlLabel>Endereço</ControlLabel>
+                      <input name="endereco" value={this.state.endereco}
+                        type="text" className="form-control"
+                        placeholder="Rua xxxxxxxxxxx" onChange={this.onChange}
+                        disabled={this.state.desabilitarEndBairro} />
+                    </div>
+                    <div className="col-md-3">
+                      <ControlLabel>Número</ControlLabel>
+                      <input name="numero" value={this.state.numero}
+                        type="text" className="form-control"
+                        placeholder="123" onChange={this.onChange} />
+                    </div>
+                    <div className="col-md-3">
+                      <ControlLabel>Complemento</ControlLabel>
+                      <input name="complemento" value={this.state.complemento}
+                        type="text" className="form-control"
+                        placeholder="Bloco A" onChange={this.onChange} />
+                    </div>
+                  </Row>
+                  <Row>
+                    <div className="col-md-4">
+                      <ControlLabel>Bairro</ControlLabel>
+                      <input name="bairro" value={this.state.bairro}
+                        type="text" className="form-control"
+                        placeholder="Jardim Aurora" onChange={this.onChange}
+                        disabled={this.state.desabilitarEndBairro} />
+                    </div>
+                    <div className="col-md-4">
+                      <ControlLabel>Cidade</ControlLabel>
+                      <input name="cidade" value={this.state.cidade}
+                        type="text" className="form-control"
+                        placeholder="Londrina" onChange={this.onChange}
+                        disabled={this.state.desabilitarCamposEndereco} />
+                    </div>
+                    <div className="col-md-4">
+                      <ControlLabel>Estado</ControlLabel>
+                      <input name="estado" value={this.state.estado}
+                        type="text" className="form-control"
+                        placeholder="Paraná" onChange={this.onChange}
+                        disabled={this.state.desabilitarCamposEndereco} />
                     </div>
                   </Row>
 
