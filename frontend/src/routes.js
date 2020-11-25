@@ -31,8 +31,18 @@ import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
 import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
 import PassengerList from "pages/Passenger/PassengerList.jsx"
 import PassengerInsert from "pages/Passenger/PassengerInsert.jsx"
+import Empresa from "pages/Company/CompanyList.jsx"
+
 
 const dashboardRoutes = [
+  {
+    path: "/Company/CompanyList.jsx",
+    name: "Empresas",
+    icon: "pe-7s-culture",
+    component: Empresa,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
   {
     pathN: "/systemCompany/SystemCompanyList.jsx",
     path: "/systemCompany/SystemCompanyList.jsx",
