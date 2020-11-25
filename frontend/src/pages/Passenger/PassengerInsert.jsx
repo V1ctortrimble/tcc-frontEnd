@@ -361,14 +361,14 @@ class PassengerInsert extends Component {
                     <div className="col-md-6">
                       <ControlLabel>Endereço</ControlLabel>
                       <input name="endereco" value={this.state.endereco}
-                        type="text" className="form-control"
+                        type="text" className="form-control" required
                         placeholder="Rua xxxxxxxxxxx" onChange={this.onChange}
                         disabled={this.state.desabilitarEndBairro} />
                     </div>
                     <div className="col-md-3">
                       <ControlLabel>Número</ControlLabel>
                       <input name="numero" value={this.state.numero}
-                        type="text" className="form-control"
+                        type="text" className="form-control" required
                         placeholder="123" onChange={this.onChange} />
                     </div>
                     <div className="col-md-3">
@@ -382,21 +382,21 @@ class PassengerInsert extends Component {
                     <div className="col-md-4">
                       <ControlLabel>Bairro</ControlLabel>
                       <input name="bairro" value={this.state.bairro}
-                        type="text" className="form-control"
+                        type="text" className="form-control" required
                         placeholder="Jardim Aurora" onChange={this.onChange}
                         disabled={this.state.desabilitarEndBairro} />
                     </div>
                     <div className="col-md-4">
                       <ControlLabel>Cidade</ControlLabel>
                       <input name="cidade" value={this.state.cidade}
-                        type="text" className="form-control"
+                        type="text" className="form-control" required
                         placeholder="Londrina" onChange={this.onChange}
                         disabled={this.state.desabilitarCamposEndereco} />
                     </div>
                     <div className="col-md-4">
                       <ControlLabel>Estado</ControlLabel>
                       <input name="estado" value={this.state.estado}
-                        type="text" className="form-control"
+                        type="text" className="form-control" required
                         placeholder="Paraná" onChange={this.onChange}
                         disabled={this.state.desabilitarCamposEndereco} />
                     </div>
