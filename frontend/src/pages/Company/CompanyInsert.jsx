@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Col, ControlLabel, Grid, Row } from "react-bootstrap";
 import InputMask from "react-input-mask";
-import { Steps, Table, notification, Button, Modal } from "antd";
+import { Steps, Table, notification, Button, Modal, Radio } from "antd";
 import 'antd/dist/antd.css';
 import Card from "components/Card/Card";
 import { EditFilled, CloseCircleOutlined, CheckCircleOutlined, DeleteFilled } from '@ant-design/icons';
@@ -109,6 +109,7 @@ class SystemCompanyInsert extends Component {
 
   state = {
     current: 0,
+    tipoEmpresa: 1,
     loadingCep: false,
     loadingAvancar: false,
     desabilitarCampoCnpj: false,
@@ -118,7 +119,7 @@ class SystemCompanyInsert extends Component {
     desabilitarCamposEnderecoSocio: true,
     visibleSocio: false,
     visibleDadosBancarios: false,
-    idEmpresaSistema: null,
+    idEmpresa: null,
     active: "",
     cnpj: "",
     razaoSocial: "",
@@ -140,7 +141,7 @@ class SystemCompanyInsert extends Component {
     nome: "",
     sobreNome: "",
     rg: "",
-    dataNascSocio: "",
+    dataNasc: "",
     telefoneSocio: "",
     celularSocio: "",
     emailSocio: "",
@@ -167,6 +168,8 @@ class SystemCompanyInsert extends Component {
 
   dataCompany = {};
 
+  dataCompanyCpf = {};
+
   dataBankDetails = {};
 
   dataCompanySystem = {};
@@ -176,12 +179,12 @@ class SystemCompanyInsert extends Component {
   async componentDidMount() {
     if (this.props.match.params.cnpj != null) {
       try {
-        const empresaSistema = await api.get(`api/persons/company/`, {
+        const empresa = await api.get(`api/persons/company/`, {
           params: {
             cnpj: this.props.match.params.cnpj
           }
         })
-        this.popularCamposEmpresaSistemaEdit(empresaSistema);
+        this.popularCamposEmpresaEdit(empresa);
 
       } catch (error) {
         if (error.response) {
@@ -287,28 +290,54 @@ class SystemCompanyInsert extends Component {
 
     e.preventDefault();
     this.setState({ loadingAvancar: true })
-    if (this.state.idEmpresaSistema != null) {
-      try {
-        this.popularCamposEmpresaPost();
-        await api.put('api/persons/company', this.dataCompany, {
-          params: {
-            cnpj: this.props.match.params.cnpj,
-          }
-        })
-        notification.success({
-          message: `Empresa do sistema atualizada com sucesso`,
-        });
-        this.nextStep();
-      } catch (error) {
-        if (error.response) {
-          notification.error({
-            message: `Não foi possível atualizar Empresa`,
-            description: `Motivo: ${error.response.data.message}`
+    if (this.state.idEmpresa != null) {
+      if(this.state.tipoEmpresa === 1){
+        try {
+          this.popularCamposEmpresaPost();
+          await api.put('api/persons/company', this.dataCompany, {
+            params: {
+              cnpj: this.state.cnpj,
+            }
+          })
+          notification.success({
+            message: `Empresa atualizada com sucesso`,
           });
+          this.nextStep();
+        } catch (error) {
+          if (error.response) {
+            notification.error({
+              message: `Não foi possível atualizar Empresa`,
+              description: `Motivo: ${error.response.data.message}`
+            });
+          }
+        } finally {
+          this.setState({ loadingAvancar: false })
         }
-      } finally {
-        this.setState({ loadingAvancar: false })
+      } else {
+        try {
+          this.popularCamposEmpresaCpfPost();
+          await api.put('api/persons/individual/', this.dataCompanyCpf, {
+            params: {
+              cpf: this.state.cpf
+            },
+          });
+          notification.success({
+            message: `Empresa atualizada com sucesso`,
+          });
+          this.limpaCamposPassageiro();
+          this.nextStep();
+        } catch (error) {
+          if (error.response) {
+            notification.error({
+              message: 'Não foi possível atualizar empresa',
+              description: `Motivo: ${error.response.data.message}`
+            });
+          }
+        } finally {
+          this.setState({ loadingAvancar: false })
+        }
       }
+      
     } else {
 
       try {
@@ -317,7 +346,7 @@ class SystemCompanyInsert extends Component {
         await api.post('api/persons/company', this.dataCompany);
         await api.post('api/companySystem', this.dataCompanySystem);
         notification.success({
-          message: `Empresa do sistema cadastrado com sucesso`,
+          message: `Empresa cadastrado com sucesso`,
         });
         this.nextStep();
       }
@@ -673,6 +702,27 @@ class SystemCompanyInsert extends Component {
     };
   }
 
+  popularCamposEmpresaCpfPost() {
+
+    this.dataCompanyCpf = {
+      active: true,
+      contacts: [
+        {
+          cell_phone: this.removeCaractEspecial(this.state.celular),
+          email: this.state.email,
+          phone: this.removeCaractEspecial(this.state.telefone),
+        }
+      ],
+      individual: {
+        birth_date: this.state.dataNasc,
+        cpf: this.removeCaractEspecial(this.state.cpf),
+        last_name: this.state.sobreNome,
+        name_individual: this.state.nome,
+        rg: this.state.rg
+      }
+    }
+  };
+
   popularCamposSocioPost() {
 
     this.dataPartner = {
@@ -735,7 +785,7 @@ class SystemCompanyInsert extends Component {
     }
   }
 
-  popularCamposEmpresaSistemaEdit(empresaSistema) {
+  popularCamposEmpresaEdit(empresaSistema) {
     this.setState({
       active: empresaSistema.data.company.active,
       idEmpresaSistema: empresaSistema.data.id_person,
@@ -904,6 +954,7 @@ class SystemCompanyInsert extends Component {
 
   render() {
     const { current } = this.state;
+    const { tipoEmpresa } = this.state;
 
     return (
 
@@ -965,34 +1016,72 @@ class SystemCompanyInsert extends Component {
             <p></p>
             {(current === 0) ? (
               <Row>
+                <div className="col-md-2">
+                  <ControlLabel>Selecione um tipo:</ControlLabel>
+                  <Radio.Group name="tipoEmpresa" style={{marginTop: '20px', marginBottom: '20px'}} onChange={this.onChange} value={this.state.tipoEmpresa}>
+                    <Radio value={1}>CNPJ</Radio>
+                    <Radio value={2}>CPF</Radio>
+                  </Radio.Group>
+                  </div>
+                  
                 <Col md={12}>
                   <form name="formEmpresa" onSubmit={this.saveCompany}>
+                  {(tipoEmpresa === 1) ? (
                     <Row>
                       <div className="col-md-2">
                         <ControlLabel>CNPJ</ControlLabel>
                         <InputMask mask="99.999.999/9999-99" name="cnpj" value={this.state.cnpj}
                           type="text" className="form-control" onBlur={this.validaCnpj(this.state.cnpj)}
-                          placeholder="00.000.000/0000-00" required onChange={this.onChange} disabled={this.state.desabilitarCampoCnpj} />
+                          placeholder="00.000.000/0000-00" required={(tipoEmpresa === 1)? true: false} onChange={this.onChange} disabled={this.state.desabilitarCampoCnpj} />
                       </div>
                       <div className="col-md-4">
                         <ControlLabel>Razão Social</ControlLabel>
                         <input name="razaoSocial" value={this.state.razaoSocial}
                           type="text" className="form-control"
-                          placeholder="Razão Social" required onChange={this.onChange} />
+                          placeholder="Razão Social" required={(tipoEmpresa === 1)? true: false} onChange={this.onChange} />
                       </div>
                       <div className="col-md-4">
                         <ControlLabel>Nome Fantasia</ControlLabel>
                         <input name="nomeFantasia" value={this.state.nomeFantasia}
                           type="text" className="form-control"
-                          placeholder="Nome Fantasia" required onChange={this.onChange} />
+                          placeholder="Nome Fantasia" required={(tipoEmpresa === 1)? true: false} onChange={this.onChange} />
                       </div>
                       <div className="col-md-2">
                         <ControlLabel>Data de Abertura</ControlLabel>
                         <input name="dataAbertura" value={this.state.dataAbertura}
                           type="date" className="form-control"
-                          placeholder="xx/xx/xxxx" required onChange={this.onChange} />
+                          placeholder="xx/xx/xxxx" required={(tipoEmpresa === 1)? true: false} onChange={this.onChange} />
                       </div>
+                                     
                     </Row>
+                    ): (
+                      <Row>
+                      <div className="col-md-2">
+                        <ControlLabel>CPF</ControlLabel>
+                        <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
+                          type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
+                          placeholder="000.000.000-00" required={(tipoEmpresa === 2)? true: false} onChange={this.onChange} disabled={this.state.desabilitarCampoCnpj} />
+                      </div>
+                      <div className="col-md-4">
+                        <ControlLabel>Nome</ControlLabel>
+                        <input name="nome" value={this.state.nome}
+                          type="text" className="form-control"
+                          placeholder="Nome" required={(tipoEmpresa === 2)? true: false} onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-4">
+                        <ControlLabel>Sobrenome</ControlLabel>
+                        <input name="sobrenome" value={this.state.sobreNome}
+                          type="text" className="form-control"
+                          placeholder="Sobrenome" required={(tipoEmpresa === 2)? true: false} onChange={this.onChange} />
+                      </div>
+                      <div className="col-md-2">
+                        <ControlLabel>Data de Nascimento</ControlLabel>
+                        <input name="dataNascimento" value={this.state.dataNasc}
+                          type="date" className="form-control"
+                          placeholder="xx/xx/xxxx" required={(tipoEmpresa === 2)? true: false} onChange={this.onChange} />
+                      </div>               
+                    </Row>
+                    )}
                     <Row>
                       <div className="col-md-2">
                         <ControlLabel>Telefone</ControlLabel>
@@ -1070,6 +1159,7 @@ class SystemCompanyInsert extends Component {
                           disabled={this.state.desabilitarCamposEndereco} />
                       </div>
                     </Row>
+                    
                     <div className="ant-row ant-row-end">
                       <div className="ant-col">
                         <Button size="middle" onClick={this.toBackList}>
@@ -1120,7 +1210,7 @@ class SystemCompanyInsert extends Component {
                     <Row>
                       <div className="col-md-2">
                         <ControlLabel>Data Nascimento</ControlLabel>
-                        <input name="dataNascSocio" value={this.state.dataNascSocio}
+                        <input name="dataNascSocio" value={this.state.dataNasc}
                           type="date" className="form-control"
                           placeholder="XX/XX/XXXX" required onChange={this.onChange} />
                       </div>

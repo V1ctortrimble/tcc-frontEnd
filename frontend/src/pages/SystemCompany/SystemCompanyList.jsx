@@ -224,7 +224,20 @@ class SystemCompanyList extends Component {
     }
   }
 
-  async buscarCompanyApi(current = 0, size = 10) {
+  async buscarCompanyApi(){
+    this.setState({ loading: true});
+    let x = [];
+    try {
+      
+    } catch (error) {
+      
+    } finally {
+      this.setState({ loading: false});
+    }
+
+  }
+
+  /*async buscarCompanyApi(current = 0, size = 10) {
     this.setState({ loading: true });
     let x = [];
     try {
@@ -275,7 +288,7 @@ class SystemCompanyList extends Component {
     } finally {
       this.setState({ loading: false });
     }
-  }
+  }*/
 
   async componentDidMount() {
     this.buscarCompanyApi();
