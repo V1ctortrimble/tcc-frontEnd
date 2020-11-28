@@ -228,13 +228,37 @@ class SystemCompanyList extends Component {
     this.setState({ loading: true});
     let x = [];
     try {
+      const data = await api.get('api/companySystem');
+      data.data.content.forEach((item, index) => {
+        x.push({
+          key: index,
+          cnpj: this.mascaraCnpj(item.cnpj),
+          fantasyName: item.fantasy_name,
+          socialReason: item.social_reason,
+          //openDate: moment(item.open_date).format("DD/MM/YYYY"),
+          //status: item.active
+        })
+      });
+      this.setState({data: x})
       
     } catch (error) {
-      
+      if (error.response) {
+        if (error.response.status === 403) {
+          notification.warning({
+              message: "Aviso",
+              description: `Motivo: Usuário não autorizado`
+          });
+      } else {
+          notification.warning({
+              message: "Aviso",
+              description: `Motivo: ${error.response.data.message}`
+          });
+      }
+        this.setState({ data: "" });
+      }  
     } finally {
       this.setState({ loading: false});
     }
-
   }
 
   /*async buscarCompanyApi(current = 0, size = 10) {
