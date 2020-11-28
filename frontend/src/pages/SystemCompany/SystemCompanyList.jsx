@@ -1,15 +1,15 @@
 import React, { Component } from "react";
-import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
-import { Button, Table, Collapse, notification, Tag, Modal, Select } from "antd";
+import { Grid, Row, Col } from "react-bootstrap";
+import { Button, Table, notification, Tag, Modal } from "antd";
 import 'antd/dist/antd.css';
 import { EditFilled, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { cnpj } from "cpf-cnpj-validator";
-import InputMask from "react-input-mask";
+//import InputMask from "react-input-mask";
 import api from '../../services/api';
 import moment from 'moment';
 
-const { Panel } = Collapse;
-const { Option } = Select;
+//const { Panel } = Collapse;
+//const { Option } = Select;
 
 class SystemCompanyList extends Component {
 
@@ -63,7 +63,7 @@ class SystemCompanyList extends Component {
       fixed: 'right',
       width: 80,
       render: (x) => {
-        return x.status ?
+        return x.status ? 
           (<div>
             <Button onClick={() => this.alterarEmpresaSistema(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
             <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><CloseCircleOutlined /></Button>
@@ -169,7 +169,7 @@ class SystemCompanyList extends Component {
         },
       });
       notification.warning({
-        message: `Empresa desativada com sucesso`,
+        message: `Empresa do sistema desativada com sucesso`,
       });
       this.buscarCompanyApi();
     } catch (error) {
@@ -229,18 +229,18 @@ class SystemCompanyList extends Component {
     let x = [];
     try {
       const data = await api.get('api/companySystem');
-      data.data.content.forEach((item, index) => {
+      data.data.forEach((item, index) => {
         x.push({
           key: index,
           cnpj: this.mascaraCnpj(item.cnpj),
           fantasyName: item.fantasy_name,
           socialReason: item.social_reason,
-          //openDate: moment(item.open_date).format("DD/MM/YYYY"),
-          //status: item.active
+          openDate: moment(item.open_date).format("DD/MM/YYYY"),
+          status: item.active
         })
       });
       this.setState({data: x})
-      
+      console.log(data.data);
     } catch (error) {
       if (error.response) {
         if (error.response.status === 403) {
@@ -258,6 +258,7 @@ class SystemCompanyList extends Component {
       }  
     } finally {
       this.setState({ loading: false});
+      console.log(this.state);
     }
   }
 
@@ -344,7 +345,7 @@ class SystemCompanyList extends Component {
             <Col md={12}>
               <Button onClick={this.handleClick} className="ant-btn-primary">Novo</Button>
               <p></p>
-              <Collapse>
+              {/*<Collapse>
                 <Panel header="Filtros" key="1">
                   <form name="formFilterSystemCompany" onSubmit={this.filtrarDados}>
                     <Row>
@@ -400,11 +401,13 @@ class SystemCompanyList extends Component {
                     </div>
                   </form>
                 </Panel>
-              </Collapse>
+              </Collapse>*/}
               <p></p>
               <Table columns={this.columns} dataSource={this.state.data}
               loading={this.state.loading} 
-              bordered scroll={{ x: 100 }} pagination={{
+              bordered scroll={{ x: 100 }} 
+             />
+               {/*pagination={{
                 ...this.state.pager,
                 showTotal: total =>
                   `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
@@ -412,7 +415,7 @@ class SystemCompanyList extends Component {
                 showSizeChanger: true,
               }}
                 size="middle"
-                onChange={(pagination) => { this.buscarCompanyApi((pagination.current - 1), pagination.pageSize) }} />
+            onChange={(pagination) => { this.buscarCompanyApi((pagination.current - 1), pagination.pageSize) }}*/}
             </Col>
           </Row>
         </Grid>
