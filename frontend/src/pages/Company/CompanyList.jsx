@@ -65,10 +65,10 @@ class CompanyList extends Component {
       render: (x) => {
         return x.status ?
           (<div>
-            <Button onClick={() => this.alterarEmpresaSistema(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+            <Button onClick={() => this.alterarEmpresa(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
             <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><CloseCircleOutlined /></Button>
           </div>) : <div>
-            <Button className="ant-btn-personalized" onClick={() => this.ativarEmpresaSistema(x)} type="primary" size="small" style={{ marginRight: '5%' }}><CheckCircleOutlined /></Button>
+            <Button className="ant-btn-personalized" onClick={() => this.ativarEmpresa(x)} type="primary" size="small" style={{ marginRight: '5%' }}><CheckCircleOutlined /></Button>
           </div>
       }
     },
@@ -128,7 +128,7 @@ class CompanyList extends Component {
     });
   };
 
-  alterarEmpresaSistema(x) {
+  alterarEmpresa(x) {
     let cnpj = this.removeCaractEspecial(x.cnpj);
     this.props.history.push(`/admin/Company/CompanyInsert/${cnpj}`)
   }
@@ -137,7 +137,7 @@ class CompanyList extends Component {
     return texto.replace(/[^a-zA-Z0-9]/g, '');
   }
 
-  async ativarEmpresaSistema(x) {
+  async ativarEmpresa(x) {
     let cnpj = this.removeCaractEspecial(x.cnpj);
     try {
       this.populaCamposAtivar(cnpj);
@@ -309,7 +309,7 @@ class CompanyList extends Component {
               <p></p>
               <Collapse>
                 <Panel header="Filtros" key="1">
-                  <form name="formFilterSystemCompany" onSubmit={this.filtrarDados}>
+                  <form name="formFilterCompany" onSubmit={this.filtrarDados}>
                     <Row>
                       <div className="col-md-3">
                         <ControlLabel>CNPJ</ControlLabel>
