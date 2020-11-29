@@ -63,7 +63,7 @@ class SystemCompanyList extends Component {
       fixed: 'right',
       width: 80,
       render: (x) => {
-        return x.status ? 
+        return x.status ?
           (<div>
             <Button onClick={() => this.alterarEmpresaSistema(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
             <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><CloseCircleOutlined /></Button>
@@ -141,11 +141,7 @@ class SystemCompanyList extends Component {
     let cnpj = this.removeCaractEspecial(x.cnpj);
     try {
       this.populaCamposAtivar(cnpj);
-      await api.put('api/persons/company/', this.dataCompany, {
-        params: {
-          cnpj: cnpj
-        },
-      });
+      await api.put('api/companySystem', this.dataCompany);
       notification.success({
         message: `Empresa ativada com sucesso`,
       });
@@ -163,11 +159,7 @@ class SystemCompanyList extends Component {
   async desativaEmpresaSistema() {
     try {
       this.populaCamposDesativar();
-      await api.put('api/persons/company/', this.dataCompany, {
-        params: {
-          cnpj: this.removeCaractEspecial(this.state.cnpjParaDesativar)
-        },
-      });
+      await api.put('api/companySystem', this.dataCompany);
       notification.warning({
         message: `Empresa do sistema desativada com sucesso`,
       });
@@ -188,19 +180,15 @@ class SystemCompanyList extends Component {
 
   populaCamposAtivar(cnpj) {
     this.dataCompany = {
-      company: {
-        active: true,
-        cnpj: cnpj
-      }
+      active: true,
+      cnpj: cnpj
     }
   }
 
   populaCamposDesativar() {
     this.dataCompany = {
-      company: {
-        active: false,
-        cnpj: this.removeCaractEspecial(this.state.cnpjParaDesativar)
-      }
+      active: false,
+      cnpj: this.removeCaractEspecial(this.state.cnpjParaDesativar)
     }
   }
 
@@ -224,8 +212,8 @@ class SystemCompanyList extends Component {
     }
   }
 
-  async buscarCompanyApi(){
-    this.setState({ loading: true});
+  async buscarCompanyApi() {
+    this.setState({ loading: true });
     let x = [];
     try {
       const data = await api.get('api/companySystem');
@@ -239,26 +227,24 @@ class SystemCompanyList extends Component {
           status: item.active
         })
       });
-      this.setState({data: x})
-      console.log(data.data);
+      this.setState({ data: x })
     } catch (error) {
       if (error.response) {
         if (error.response.status === 403) {
           notification.warning({
-              message: "Aviso",
-              description: `Motivo: Usuário não autorizado`
+            message: "Aviso",
+            description: `Motivo: Usuário não autorizado`
           });
-      } else {
+        } else {
           notification.warning({
-              message: "Aviso",
-              description: `Motivo: ${error.response.data.message}`
+            message: "Aviso",
+            description: `Motivo: ${error.response.data.message}`
           });
-      }
+        }
         this.setState({ data: "" });
-      }  
+      }
     } finally {
-      this.setState({ loading: false});
-      console.log(this.state);
+      this.setState({ loading: false });
     }
   }
 
@@ -404,10 +390,10 @@ class SystemCompanyList extends Component {
               </Collapse>*/}
               <p></p>
               <Table columns={this.columns} dataSource={this.state.data}
-              loading={this.state.loading} 
-              bordered scroll={{ x: 100 }} 
-             />
-               {/*pagination={{
+                loading={this.state.loading}
+                bordered scroll={{ x: 100 }}
+              />
+              {/*pagination={{
                 ...this.state.pager,
                 showTotal: total =>
                   `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
