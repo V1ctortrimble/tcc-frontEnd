@@ -77,7 +77,7 @@ const dashboardRoutes = [
     visibleOnMenu: false,
   },
   {
-    path: "/Company/CompanyInsert/:document",
+    path: "/Company/CompanyInsert/:cnpj",
     name: "Alterar Empresa",
     icon: "pe-7s-airplay",
     component: CompanyInsert,

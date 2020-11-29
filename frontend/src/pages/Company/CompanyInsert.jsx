@@ -1,16 +1,18 @@
 import React, { Component } from "react";
 import { Col, ControlLabel, Grid, Row } from "react-bootstrap";
 import InputMask from "react-input-mask";
-import { Steps, Table, notification, Button, Modal, Radio } from "antd";
+import { Steps, Table, notification, Button, Modal, Input, Select } from "antd";
 import 'antd/dist/antd.css';
 import Card from "components/Card/Card";
 import { EditFilled, CloseCircleOutlined, CheckCircleOutlined, DeleteFilled } from '@ant-design/icons';
 import cep from 'cep-promise';
 import api from '../../services/api';
-import { cpf, cnpj } from "cpf-cnpj-validator";
+import { cnpj } from "cpf-cnpj-validator";
 import moment from 'moment';
 
 const { Step } = Steps;
+const { TextArea } = Input;
+const { Option } = Select;
 
 class SystemCompanyInsert extends Component {
 
@@ -109,7 +111,6 @@ class SystemCompanyInsert extends Component {
 
   state = {
     current: 0,
-    tipoEmpresa: 1,
     loadingCep: false,
     loadingAvancar: false,
     desabilitarCampoCnpj: false,
@@ -135,23 +136,32 @@ class SystemCompanyInsert extends Component {
     bairro: "",
     cidade: "",
     estado: "",
-    idSocio: null,
-    activeSocio: "",
-    cpf: "",
-    nome: "",
-    sobreNome: "",
-    rg: "",
-    dataNasc: "",
-    telefoneSocio: "",
-    celularSocio: "",
-    emailSocio: "",
-    cepSocio: "",
-    enderecoSocio: "",
-    numeroSocio: "",
-    complementoSocio: "",
-    bairroSocio: "",
-    cidadeSocio: "",
-    estadoSocio: "",
+    idHospedagem: null,
+    activeHospedagem: "",
+    tipoHospedagem: {
+      idTipoHospedagem: null,
+      nomeTipoHospedagem: {
+        children: null,
+        key: null,
+        value: null,
+      },
+    },
+    tiposHospedagens: [
+      {
+        idTipoHospedagem: null,
+        nomeTipoHospedagem: null,
+      }
+    ],
+    registroTurismo: "",
+    qntPessoas: "",
+    descricaoLocal: "",
+    cepHospedagem: "",
+    enderecoHospedagem: "",
+    numeroHospedagem: "",
+    complementoHospedagem: "",
+    bairroHospedagem: "",
+    cidadeHospedagem: "",
+    estadoHospedagem: "",
     idConta: null,
     activeConta: "",
     banco: "",
@@ -213,6 +223,9 @@ class SystemCompanyInsert extends Component {
         }
       }
     }
+    const tiposHospedagens = await api.get('/api/companySystem');
+    this.popularTiposHospedagem(tiposHospedagens);
+    console.log(this.state)
   }
 
   showModalHospedagem = (x) => {
@@ -260,19 +273,6 @@ class SystemCompanyInsert extends Component {
     return texto.replace(/[^a-zA-Z0-9]/g, '');
   }
 
-  validaCpf(cpfValidar) {
-    const cpfLimpo = this.removeCaractEspecial(cpfValidar);
-    if (cpfLimpo.length === 11) {
-      if (cpf.isValid(cpfLimpo)) {
-      } else {
-        notification.error({
-          message: `CPF ${cpfValidar} é inválido, favor informar um CPF válido`,
-        });
-        this.setState({ cpf: "" });
-      }
-    }
-  }
-
   validaCnpj(cnpjValidar) {
     const cnpjLimpo = this.removeCaractEspecial(cnpjValidar);
     if (cnpjLimpo.length === 14) {
@@ -291,55 +291,28 @@ class SystemCompanyInsert extends Component {
     e.preventDefault();
     this.setState({ loadingAvancar: true })
     if (this.state.idEmpresa != null) {
-      if(this.state.tipoEmpresa === 1){
-        try {
-          this.popularCamposEmpresaPost();
-          await api.put('api/persons/company', this.dataCompany, {
-            params: {
-              cnpj: this.state.cnpj,
-            }
-          })
-          notification.success({
-            message: `Empresa atualizada com sucesso`,
-          });
-          this.nextStep();
-        } catch (error) {
-          if (error.response) {
-            notification.error({
-              message: `Não foi possível atualizar Empresa`,
-              description: `Motivo: ${error.response.data.message}`
-            });
+      try {
+        this.popularCamposEmpresaPost();
+        await api.put('api/persons/company', this.dataCompany, {
+          params: {
+            cnpj: this.state.cnpj,
           }
-        } finally {
-          this.setState({ loadingAvancar: false })
-        }
-      } else {
-        try {
-          this.popularCamposEmpresaCpfPost();
-          await api.put('api/persons/individual/', this.dataCompanyCpf, {
-            params: {
-              cpf: this.state.cpf
-            },
+        })
+        notification.success({
+          message: `Empresa atualizada com sucesso`,
+        });
+        this.nextStep();
+      } catch (error) {
+        if (error.response) {
+          notification.error({
+            message: `Não foi possível atualizar Empresa`,
+            description: `Motivo: ${error.response.data.message}`
           });
-          notification.success({
-            message: `Empresa atualizada com sucesso`,
-          });
-          this.limpaCamposPassageiro();
-          this.nextStep();
-        } catch (error) {
-          if (error.response) {
-            notification.error({
-              message: 'Não foi possível atualizar empresa',
-              description: `Motivo: ${error.response.data.message}`
-            });
-          }
-        } finally {
-          this.setState({ loadingAvancar: false })
         }
+      } finally {
+        this.setState({ loadingAvancar: false })
       }
-      
     } else {
-
       try {
         this.popularCamposEmpresaPost();
         this.popularCamposEmpresaSistema();
@@ -702,27 +675,6 @@ class SystemCompanyInsert extends Component {
     };
   }
 
-  popularCamposEmpresaCpfPost() {
-
-    this.dataCompanyCpf = {
-      active: true,
-      contacts: [
-        {
-          cell_phone: this.removeCaractEspecial(this.state.celular),
-          email: this.state.email,
-          phone: this.removeCaractEspecial(this.state.telefone),
-        }
-      ],
-      individual: {
-        birth_date: this.state.dataNasc,
-        cpf: this.removeCaractEspecial(this.state.cpf),
-        last_name: this.state.sobreNome,
-        name_individual: this.state.nome,
-        rg: this.state.rg
-      }
-    }
-  };
-
   popularCamposSocioPost() {
 
     this.dataPartner = {
@@ -896,6 +848,21 @@ class SystemCompanyInsert extends Component {
     })
   }
 
+  popularTiposHospedagem(tiposHospedagem) {
+    let hospedagem = []
+    tiposHospedagem.data.forEach((item) => {
+      hospedagem.push({
+        cnpjEmpresa: item.cnpj,
+        nomeFantasia: item.fantasy_name,
+        idCompanySystem: item.id_company_system,
+        razaoSocial: item.social_reason,
+      })
+    });
+    this.setState({
+      tiposHospedagens: hospedagem,
+    })
+  }
+
   limpaCamposSocio() {
     this.setState({
       idSocio: null,
@@ -929,7 +896,7 @@ class SystemCompanyInsert extends Component {
   }
 
   toBackList = () => {
-    this.props.history.push("/admin/systemCompany/SystemCompanyList.jsx")
+    this.props.history.push("/admin/Company/CompanyList.jsx")
   }
 
   onChangeStep = current => {
@@ -954,7 +921,6 @@ class SystemCompanyInsert extends Component {
 
   render() {
     const { current } = this.state;
-    const { tipoEmpresa } = this.state;
 
     return (
 
@@ -1016,72 +982,34 @@ class SystemCompanyInsert extends Component {
             <p></p>
             {(current === 0) ? (
               <Row>
-                <div className="col-md-2">
-                  <ControlLabel>Selecione um tipo:</ControlLabel>
-                  <Radio.Group name="tipoEmpresa" style={{marginTop: '20px', marginBottom: '20px'}} onChange={this.onChange} value={this.state.tipoEmpresa}>
-                    <Radio value={1}>CNPJ</Radio>
-                    <Radio value={2}>CPF</Radio>
-                  </Radio.Group>
-                  </div>
-                  
                 <Col md={12}>
                   <form name="formEmpresa" onSubmit={this.saveCompany}>
-                  {(tipoEmpresa === 1) ? (
                     <Row>
                       <div className="col-md-2">
                         <ControlLabel>CNPJ</ControlLabel>
                         <InputMask mask="99.999.999/9999-99" name="cnpj" value={this.state.cnpj}
                           type="text" className="form-control" onBlur={this.validaCnpj(this.state.cnpj)}
-                          placeholder="00.000.000/0000-00" required={(tipoEmpresa === 1)? true: false} onChange={this.onChange} disabled={this.state.desabilitarCampoCnpj} />
+                          placeholder="00.000.000/0000-00" required onChange={this.onChange} disabled={this.state.desabilitarCampoCnpj} />
                       </div>
                       <div className="col-md-4">
                         <ControlLabel>Razão Social</ControlLabel>
                         <input name="razaoSocial" value={this.state.razaoSocial}
                           type="text" className="form-control"
-                          placeholder="Razão Social" required={(tipoEmpresa === 1)? true: false} onChange={this.onChange} />
+                          placeholder="Razão Social" required onChange={this.onChange} />
                       </div>
                       <div className="col-md-4">
                         <ControlLabel>Nome Fantasia</ControlLabel>
                         <input name="nomeFantasia" value={this.state.nomeFantasia}
                           type="text" className="form-control"
-                          placeholder="Nome Fantasia" required={(tipoEmpresa === 1)? true: false} onChange={this.onChange} />
+                          placeholder="Nome Fantasia" required onChange={this.onChange} />
                       </div>
                       <div className="col-md-2">
                         <ControlLabel>Data de Abertura</ControlLabel>
                         <input name="dataAbertura" value={this.state.dataAbertura}
                           type="date" className="form-control"
-                          placeholder="xx/xx/xxxx" required={(tipoEmpresa === 1)? true: false} onChange={this.onChange} />
+                          placeholder="xx/xx/xxxx" required onChange={this.onChange} />
                       </div>
-                                     
                     </Row>
-                    ): (
-                      <Row>
-                      <div className="col-md-2">
-                        <ControlLabel>CPF</ControlLabel>
-                        <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
-                          type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
-                          placeholder="000.000.000-00" required={(tipoEmpresa === 2)? true: false} onChange={this.onChange} disabled={this.state.desabilitarCampoCnpj} />
-                      </div>
-                      <div className="col-md-4">
-                        <ControlLabel>Nome</ControlLabel>
-                        <input name="nome" value={this.state.nome}
-                          type="text" className="form-control"
-                          placeholder="Nome" required={(tipoEmpresa === 2)? true: false} onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-4">
-                        <ControlLabel>Sobrenome</ControlLabel>
-                        <input name="sobrenome" value={this.state.sobreNome}
-                          type="text" className="form-control"
-                          placeholder="Sobrenome" required={(tipoEmpresa === 2)? true: false} onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-2">
-                        <ControlLabel>Data de Nascimento</ControlLabel>
-                        <input name="dataNascimento" value={this.state.dataNasc}
-                          type="date" className="form-control"
-                          placeholder="xx/xx/xxxx" required={(tipoEmpresa === 2)? true: false} onChange={this.onChange} />
-                      </div>               
-                    </Row>
-                    )}
                     <Row>
                       <div className="col-md-2">
                         <ControlLabel>Telefone</ControlLabel>
@@ -1159,7 +1087,6 @@ class SystemCompanyInsert extends Component {
                           disabled={this.state.desabilitarCamposEndereco} />
                       </div>
                     </Row>
-                    
                     <div className="ant-row ant-row-end">
                       <div className="ant-col">
                         <Button size="middle" onClick={this.toBackList}>
@@ -1183,54 +1110,62 @@ class SystemCompanyInsert extends Component {
                   <form name="formHospedagem" onSubmit={this.savePartner}>
                     <Row>
                       <div className="col-md-3">
-                        <ControlLabel>CPF</ControlLabel>
+                        <ControlLabel>Tipo da hospedagem</ControlLabel>
+                        <Select
+                          style={{ textAlign: 'left', marginTop: '10px', fontSize: '14px', width: '200px' }}
+                          showSearch
+                          required
+                          value={this.state.tipoHospedagem.idTipoHospedagem}
+                          name="tipoHospedagem"
+                          placeholder="Tipo hospedagem"
+                          onChange={(value, key) =>
+                            this.setState({
+                              tipoHospedagem: {
+                                idTipoHospedagem: value,
+                                nomeTipoHospedagem: key
+                              }
+                            })
+                          }
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children
+                              .toLowerCase()
+                              .indexOf(input.toLowerCase()) >= 0
+                          }
+                        >
+                          {this.state.tiposHospedagens.map((item) => (
+                            <Option value={item.idTipoHospedagem} key={item.nomeTipoHospedagem}>
+                              {item.nomeTipoHospedagem}
+                            </Option>
+                          ))}
+                        </Select>
                         <InputMask mask="999.999.999-99" name="cpf" value={this.state.cpf}
-                          type="text" className="form-control" onBlur={this.validaCpf(this.state.cpf)}
+                          type="text" className="form-control"
                           placeholder="999.999.999-99" required onChange={this.onChange} />
                       </div>
                       <div className="col-md-3">
-                        <ControlLabel>Nome</ControlLabel>
-                        <input name="nome" value={this.state.nome}
+                        <ControlLabel>Registro Ministério Turismo</ControlLabel>
+                        <input name="registroTurismo" value={this.state.registroTurismo}
                           type="text" className="form-control"
-                          placeholder="José" required onChange={this.onChange} />
+                          placeholder="José" onChange={this.onChange} />
                       </div>
                       <div className="col-md-3">
-                        <ControlLabel>Sobrenome</ControlLabel>
-                        <input name="sobreNome" value={this.state.sobreNome}
-                          type="text" className="form-control"
-                          placeholder="da Silva" required onChange={this.onChange} />
+                        <ControlLabel>Qnt Pessoas possíveis</ControlLabel>
+                        <input name="qntPessoas" value={this.state.qntPessoas}
+                          type="number" className="form-control"
+                          placeholder="50" required onChange={this.onChange} />
                       </div>
                       <div className="col-md-3">
-                        <ControlLabel>RG</ControlLabel>
-                        <input name="rg" value={this.state.rg}
-                          type="text" className="form-control"
-                          placeholder="00000000" required onChange={this.onChange} />
+
                       </div>
                     </Row>
                     <Row>
-                      <div className="col-md-2">
-                        <ControlLabel>Data Nascimento</ControlLabel>
-                        <input name="dataNascSocio" value={this.state.dataNasc}
-                          type="date" className="form-control"
-                          placeholder="XX/XX/XXXX" required onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-2">
-                        <ControlLabel>Telefone</ControlLabel>
-                        <InputMask mask="(99) 9999-9999" name="telefoneSocio" value={this.state.telefoneSocio}
-                          type="text" className="form-control"
-                          placeholder="(XX) XXXX-XXXX" onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-2">
-                        <ControlLabel>Celular</ControlLabel>
-                        <InputMask mask="(99) 99999-9999" name="celularSocio" value={this.state.celularSocio}
-                          type="text" className="form-control"
-                          placeholder="(XX) XXXXX-XXXX" required onChange={this.onChange} />
-                      </div>
-                      <div className="col-md-3">
-                        <ControlLabel>Email</ControlLabel>
-                        <input name="emailSocio" value={this.state.emailSocio}
-                          type="email" className="form-control"
-                          placeholder="xxxxxx@xxxxx.com" onChange={this.onChange} />
+                      <div className="col-md-4">
+                        <ControlLabel>Descrição do Local:</ControlLabel>
+                        <TextArea rows={4} name="descricaoLocal" value={this.state.descricaoLocal}
+                          type="text" className="form-control" style={{ padding: "8px 12px", marginTop: "10px" }}
+                          placeholder="Características do local, como sao os quartos
+                          Cozinha, Banheiros, Local com piscina, e etc." required onChange={this.onChange} />
                       </div>
                     </Row>
                     <Row>
