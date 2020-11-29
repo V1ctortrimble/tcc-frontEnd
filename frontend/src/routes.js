@@ -18,23 +18,73 @@
 /*import Dashboard from "views/Dashboard.jsx";
 import TableList from "views/TableList.jsx";
 import Typography from "views/Typography.jsx";
-import Icons from "views/Icons.jsx";
 import Maps from "views/Maps.jsx";
 import Notifications from "views/Notifications.jsx";
 import UserRegistration from "pages/UserRegistration/UserRegistration";
 import UserLister from "views/UserLister.jsx";
 import Upgrade from "views/Upgrade.jsx";
 import UserProfile from "views/UserProfile.jsx";*/
+import Icons from "views/Icons.jsx";
 import UserList from "pages/User/UserList";
 import UserInsert from "pages/User/UserInsert";
 import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
 import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
 import PassengerList from "pages/Passenger/PassengerList.jsx"
 import PassengerInsert from "pages/Passenger/PassengerInsert.jsx"
+import Company from "pages/Company/CompanyList.jsx"
+import CompanyInsert from "pages/Company/CompanyInsert.jsx"
+
 
 const dashboardRoutes = [
   {
-    pathN: "/systemCompany/SystemCompanyList.jsx",
+    path: "/Passenger/PassengerList.jsx",
+    name: "Passageiros",
+    icon: "pe-7s-add-user",
+    component: PassengerList,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
+  {
+    path: "/Passenger/PassengerInsert.jsx",
+    name: "Cadastro de Passageiro",
+    icon: "pe-7s-culture",
+    component: PassengerInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/Passenger/PassengerInsert/:cpf",
+    name: "Alterar Passageiro",
+    icon: "pe-7s-culture",
+    component: PassengerInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/Company/CompanyList.jsx",
+    name: "Empresas",
+    icon: "pe-7s-airplay",
+    component: Company,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
+  {
+    path: "/Company/CompanyInsert.jsx",
+    name: "Cadastro de Empresa",
+    icon: "pe-7s-airplay",
+    component: CompanyInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/Company/CompanyInsert/:document",
+    name: "Alterar Empresa",
+    icon: "pe-7s-airplay",
+    component: CompanyInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
     path: "/systemCompany/SystemCompanyList.jsx",
     name: "Empresa do Sistema",
     icon: "pe-7s-culture",
@@ -83,28 +133,12 @@ const dashboardRoutes = [
     visibleOnMenu: false,
   },
   {
-    path: "/Passenger/PassengerList.jsx",
-    name: "Passageiros",
-    icon: "pe-7s-add-user",
-    component: PassengerList,
+    path: "/icons",
+    name: "Icons",
+    icon: "pe-7s-science",
+    component: Icons,
     layout: "/admin",
     visibleOnMenu: true,
-  },
-  {
-    path: "/Passenger/PassengerInsert.jsx",
-    name: "Cadastro de Passageiro",
-    icon: "pe-7s-culture",
-    component: PassengerInsert,
-    layout: "/admin",
-    visibleOnMenu: false,
-  },
-  {
-    path: "/Passenger/PassengerInsert/:cpf",
-    name: "Alterar Passageiro",
-    icon: "pe-7s-culture",
-    component: PassengerInsert,
-    layout: "/admin",
-    visibleOnMenu: false,
   },
  /* 
  {

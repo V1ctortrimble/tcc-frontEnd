@@ -6,7 +6,7 @@ import './styles.css';
 import {Button, notification} from 'antd';
 
 import travelLogoImg from '../../assets/TravelLogo.png';
-import travelImg from '../../assets/TravelsWorld.gif';
+
 
 
 export default function Login() {
@@ -59,9 +59,12 @@ export default function Login() {
     }
 
     return (
-        <div className="login-container">
+        <div className="container-fundo" >
+        <div className="login-container" >
             <section className="form">
+                <div style={{marginLeft: '10%'}}>
                 <img src={travelLogoImg} alt="Logo Travel" />
+                </div>
 
                 <form onSubmit={handleLogin}>
                     <h1>Faça seu login</h1>
@@ -76,13 +79,16 @@ export default function Login() {
                         onChange={e => setPassword(e.target.value)}
                     />
                     <Button className="button" type="primary" size="large" htmlType="submit" loading={loading}>Entrar</Button>
+                    <div style={{marginLeft: '25%'}}>
                     <Link className="back-link" to="/forgetPassword">
                         <FiKey size={16} color="#E02041" />
                     Recuperar a senha
                 </Link>
+                </div>
                 </form>
             </section>
-            <img src={travelImg} alt="Imagem Viagens" />
+            
+        </div>
         </div>
     )
 }
