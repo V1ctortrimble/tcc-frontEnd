@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useHistory, useParams } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
+import {Button} from 'antd';
 
 import api from '../../services/api';
 import './styles.css';
@@ -17,7 +18,7 @@ export default function RecoverPassword() {
     const divStyleShow = {
         display: 'block',
     }
-
+    const [loading, setLoading] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [repeat_password, setRepeatPassword] = useState('');
@@ -41,8 +42,6 @@ export default function RecoverPassword() {
 
                 setUsername(response.data.username);
 
-                console.log(username);
-
             } catch (error) {
                 setConfirm(divStyleHidden);
                 setErrorCod(divStyleShow);
@@ -65,6 +64,7 @@ export default function RecoverPassword() {
         };
 
         if (password === repeat_password) {
+            setLoading(true);
             try {
                 await api.put('/api/changepassword', data);
 
@@ -78,6 +78,8 @@ export default function RecoverPassword() {
             } catch (error) {
                 setConfirm(divStyleHidden);
                 setError(divStyleShow);
+            } finally {
+                setLoading(false);
             }
         } else {
             setErrorPassword(divStyleShow);
@@ -128,7 +130,7 @@ export default function RecoverPassword() {
                         title="Digite uma senha com letras (Maiuscula e Minuscula), números e caracteres especiais (#@$!), mínimo de 8 caracteres."
                         onChange={e => setRepeatPassword(e.target.value)}
                     />
-                    <button className="button" type="submit">Alterar Senha</button>
+                    <Button className="button" type="primary" size="large" htmlType="submit" loading={loading}>Alterar Senha</Button>
                 </form>
             </div>
         </div>

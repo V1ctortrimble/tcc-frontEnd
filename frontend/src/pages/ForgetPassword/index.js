@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
+import {Button} from 'antd';
 
 import api from '../../services/api';
 import './styles.css';
@@ -17,6 +18,8 @@ export default function RecoverPassword() {
         display: 'block',
     }
 
+    const [loading, setLoading] = useState(false);
+
     const [username, setUsername] = useState('');
 
     const [confirm, setConfirm] = useState(divStyleHidden);
@@ -29,6 +32,7 @@ export default function RecoverPassword() {
         const data = {
             username,
         };
+        setLoading(true);
 
         try {
             await api.post('/api/sendemail', data);
@@ -38,6 +42,8 @@ export default function RecoverPassword() {
         } catch (error) {
             setError(divStyleShow);
             setConfirm(divStyleHidden);
+        } finally {
+            setLoading(false);
         }
     }
     return (
@@ -62,7 +68,7 @@ export default function RecoverPassword() {
                         value={username}
                         onChange={e => setUsername(e.target.value)}
                     />
-                    <button className="button" type="submit">Recuperar Senha</button>
+                    <Button className="button" type="primary" size="large" htmlType="submit" loading={loading}>Recuperar Senha</Button>
                     <div className="divTextConfirm" style={confirm}><h5>Verifique seu e-mail, se recebeu o código para troca de senha!</h5></div>
                     <div className="divTextError" style={error}><h5>Erro na recuperação de senha, tente novamente mais tarde!</h5></div>
                 </form>

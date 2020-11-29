@@ -204,7 +204,7 @@ class UserProfile extends Component {
         cnpj: usuario.data.company_system.cnpj,
         empresa: {
           key: usuario.data.company_system.id_company_system,
-        } 
+        }
       },
     })
   }
@@ -212,12 +212,14 @@ class UserProfile extends Component {
   popularEmpresas(empresas) {
     let emp = []
     empresas.data.forEach((item, index) => {
-      emp.push({
-        cnpjEmpresa: item.cnpj,
-        nomeFantasia: item.fantasy_name,
-        idCompanySystem: item.id_company_system,
-        razaoSocial: item.social_reason,
-      })
+      if (item.active) {
+        emp.push({
+          cnpjEmpresa: item.cnpj,
+          nomeFantasia: item.fantasy_name,
+          idCompanySystem: item.id_company_system,
+          razaoSocial: item.social_reason,
+        })
+      }
     });
     this.setState({
       empresas: emp,
@@ -280,9 +282,12 @@ class UserProfile extends Component {
                         name="empresa"
                         placeholder="Empresa"
                         onChange={(value, key) =>
-                          this.setState({empresaSistema: {
-                          cnpj: value,
-                          empresa: key }})
+                          this.setState({
+                            empresaSistema: {
+                              cnpj: value,
+                              empresa: key
+                            }
+                          })
                         }
                         optionFilterProp="children"
                         filterOption={(input, option) =>
