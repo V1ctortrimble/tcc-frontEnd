@@ -190,8 +190,13 @@ class SystemCompanyInsert extends Component {
     modeloCad: "",
     numAssentosVeiculoCad: "",
     tipoAssentosVeiculoCad: "",
+    descricaoVeiculoCad: "",
     banheiroCad: false,
     acessibilidadeCad: false,
+    nomeVeiculoDesativar: "",
+    qntAssentosDesativar: "",
+    tipoAssentosVeiculoDesativar: "",
+    tipoVeiculoDesativar: "",
     dataHosting: [{}],
     dataVehicles: [{}],
   };
@@ -199,6 +204,8 @@ class SystemCompanyInsert extends Component {
   dataCompany = {};
 
   dataHosting = {};
+
+  dataVehicle = {};
 
   dataHostingType = {};
 
@@ -230,8 +237,8 @@ class SystemCompanyInsert extends Component {
         this.recuperarHospedagens();
       } catch (error) {
         if (error.response) {
-          notification.error({
-            message: `Não foi possível carregar as hospedagens`,
+          notification.warning({
+            message: `Não foi possível carregar as hospedagens da empresa`,
           })
         }
       }
@@ -239,22 +246,14 @@ class SystemCompanyInsert extends Component {
         this.recuperarVeiculos();
       } catch (error) {
         if (error.response) {
-          notification.error({
-            message: `Não foi possível carregar dados bancários`,
+          notification.warning({
+            message: `Não foi possível carregar os veículos da empresa`,
           })
         }
       }
     }
-    try {
-      this.recuperarTipoHospedagens();
-    } catch (error) {
-      if (error.response) {
-        notification.error({
-          message: `Não foi possível carregar os tipos de hospedagens`,
-          description: `Motivo: ${error.response.data.message}`
-        })
-      }
-    }
+    this.recuperarTipoHospedagens();
+    this.recuperarTipoVeiculos();
   }
 
 
@@ -277,18 +276,18 @@ class SystemCompanyInsert extends Component {
       nomeTipoHospedagemDesativar: x.tpHosp,
       enderecoHospedagemDesativar: x.endereco,
       cidadeHospedagemDesativar: x.cidade,
+      visibleHospedagem: true,
     });
   };
 
   showModalVeiculo = (y) => {
-    let idConta = y.idConta;
-    let agencia = y.agencia;
-    let conta = y.conta;
     this.setState({
-      idConta: idConta,
-      agenciaDesativar: agencia,
-      contaDesativar: conta,
-      visibleDadosBancarios: true,
+      idVeiculoDesativar: y.idVeiculo,
+      nomeVeiculoDesativar: y.nomeVeiculo,
+      qntAssentosDesativar: y.qntAssentos,
+      tipoAssentosVeiculoDesativar: y.tpAssento,
+      tipoVeiculoDesativar: y.tpVeiculo,
+      visibleVeiculos: true,
     });
   };
 
@@ -300,7 +299,7 @@ class SystemCompanyInsert extends Component {
   };
 
   confirmarModalCadTpVeiculo = (e) => {
-    this.cadastrarTipoHospedagem(e);
+    this.cadastrarTipoVeiculo(e);
     this.setState({
       visibleCadTpVeiculos: false,
     });
@@ -374,11 +373,9 @@ class SystemCompanyInsert extends Component {
     } else {
       try {
         this.popularCamposEmpresaPost();
-        this.popularCamposEmpresaSistema();
         await api.post('api/persons/company', this.dataCompany);
-        await api.post('api/companySystem', this.dataCompanySystem);
         notification.success({
-          message: `Empresa cadastrado com sucesso`,
+          message: `Empresa cadastrada com sucesso`,
         });
         this.nextStep();
       }
@@ -443,19 +440,19 @@ class SystemCompanyInsert extends Component {
   saveVehicle = async (e) => {
     e.preventDefault();
     this.setState({ loadingAvancar: true })
-    if (this.state.idHospedagem != null) {
+    if (this.state.idVeiculo != null) {
       try {
-        this.popularCamposHospedagemPost();
-        await api.put('api/hosting', this.dataHosting);
+        this.popularCamposVeiculoPost();
+        await api.put('api/vehicles', this.dataVehicle);
         notification.success({
-          message: `Hospedagem atualizada com sucesso`,
+          message: `Veículo atualizado com sucesso`,
         });
-        this.limpaCamposHospedagem();
-        this.recuperarHospedagens();
+        this.limpaCamposVeiculos();
+        this.recuperarVeiculos();
       } catch (error) {
         if (error.response) {
           notification.error({
-            message: 'Não foi possível Salvar Hospedagem',
+            message: 'Não foi possível atualizar veículo',
             description: `Motivo: ${error.response.data.message}`
           });
         }
@@ -464,18 +461,18 @@ class SystemCompanyInsert extends Component {
       }
     } else {
       try {
-        this.popularCamposHospedagemPost();
-        await api.post('api/hosting', this.dataHosting);
+        this.popularCamposVeiculoPost();
+        await api.post('api/vehicles', this.dataVehicle);
         notification.success({
-          message: `Hospedagem adicionada com sucesso`,
+          message: `Veículo adicionado com sucesso`,
         });
-        this.limpaCamposHospedagem();
-        this.recuperarHospedagens();
+        this.limpaCamposVeiculos();
+        this.recuperarVeiculos();
       }
       catch (error) {
         if (error.response) {
           notification.error({
-            message: 'Não foi possível Salvar Hospedagem',
+            message: 'Não foi possível salvar veículo',
             description: `Motivo: ${error.response.data.message}`
           });
         }
@@ -578,13 +575,31 @@ class SystemCompanyInsert extends Component {
   }
 
   async recuperarTipoHospedagens() {
-    const tiposHospedagens = await api.get('/api/hostingtype');
-    this.popularTiposHospedagem(tiposHospedagens);
+    try {
+      const tiposHospedagens = await api.get('/api/hostingtype');
+      this.popularTiposHospedagem(tiposHospedagens);
+    } catch (error) {
+      if (error.response) {
+        notification.error({
+          message: `Não foi possível carregar os tipos de hospedagens`,
+          description: `Motivo: ${error.response.data.message}`
+        })
+      }
+    }
   }
 
   async recuperarTipoVeiculos() {
-    const tiposVeiculos = await api.get('api/vehicles/type/all');
-    this.popularTiposVeiculos(tiposVeiculos);
+    try {
+      const tiposVeiculos = await api.get('api/vehicles/type/all');
+      this.popularTiposVeiculos(tiposVeiculos);
+    } catch (error) {
+      if (error.response) {
+        notification.error({
+          message: `Não foi possível carregar os tipos de veículos`,
+          description: `Motivo: ${error.response.data.message}`
+        })
+      }
+    }
   }
 
   async recuperarVeiculos() {
@@ -599,7 +614,7 @@ class SystemCompanyInsert extends Component {
   async alterarHospedagemEmpresa(x) {
     let idHospedagem = x.idHospedagem
     try {
-      const hospedagemEmpresa = await api.get(`api/hosting`, {
+      const hospedagemEmpresa = await api.get(`api/hosting/id`, {
         params: {
           id: idHospedagem,
         }
@@ -619,7 +634,7 @@ class SystemCompanyInsert extends Component {
     e.preventDefault();
     if (this.state.tipoHospedagemCad === "" || this.state.tipoHospedagemCad === null) {
       notification.warning({
-        message: 'Não é possível Salvar Tipo de Hospedagem sem valor',
+        message: 'Não é possível Salvar Tipo de Hospedagem sem preencher todos os campos',
       });
     } else {
       this.setState({ loadingModal: true })
@@ -646,24 +661,25 @@ class SystemCompanyInsert extends Component {
 
   async cadastrarTipoVeiculo(e) {
     e.preventDefault();
-    if (this.state.tipoHospedagemCad === "" || this.state.tipoHospedagemCad === null) {
+    if (this.state.nomeTipoVeiculoCad === "" || this.state.fabricanteCad === "" ||
+      this.state.modeloCad === "" || this.state.numAssentosVeiculoCad === "" || this.state.tipoAssentosVeiculoCad === "") {
       notification.warning({
-        message: 'Não é possível Salvar Tipo de Hospedagem sem valor',
+        message: 'Não é possível Salvar Tipo de Veículo sem preencher todos os campos',
       });
     } else {
       this.setState({ loadingModal: true })
       try {
-        this.populaCamposCadastroTpHospedagem();
-        await api.post('api/hostingtype', this.dataHostingType);
+        this.populaCamposCadastroTpVeiculo();
+        await api.post('api/vehicles/type', this.dataVehiclesType);
         notification.success({
-          message: `Tipo de hospedagem adicionado com sucesso`,
+          message: `Tipo de veículo adicionado com sucesso`,
         });
-        this.recuperarTipoHospedagens();
+        this.recuperarTipoVeiculos();
       }
       catch (error) {
         if (error.response) {
           notification.error({
-            message: 'Não foi possível Salvar Tipo de Hospedagem',
+            message: 'Não foi possível Salvar Tipo de Veículo',
             description: `Motivo: ${error.response.data.message}`
           });
         }
@@ -691,7 +707,7 @@ class SystemCompanyInsert extends Component {
     }
   }
 
-  async ativarHospedagemEmpresa(){
+  async ativarHospedagemEmpresa() {
 
   }
 
@@ -743,7 +759,7 @@ class SystemCompanyInsert extends Component {
     }
   }
 
-  populaCamposVeiculosDesativar() {
+  populaCamposVeiculoDesativar() {
     this.dataCompanyVehicles = {
       active: false,
       id_vehicle: this.state.idVeiculoDesativar,
@@ -753,6 +769,20 @@ class SystemCompanyInsert extends Component {
   populaCamposCadastroTpHospedagem() {
     this.dataHostingType = {
       name_hosting_type: this.state.tipoHospedagemCad,
+    }
+  }
+
+  populaCamposCadastroTpVeiculo() {
+    this.dataVehiclesType = {
+      accessibility: this.state.acessibilidadeCad,
+      bathroom: this.state.banheiroCad,
+      description: this.state.descricaoVeiculoCad,
+      name_hosting_type: this.state.tipoHospedagemCad,
+      manufacturer: this.state.fabricanteCad,
+      model: this.state.modeloCad,
+      name_vehicle_type: this.state.nomeTipoVeiculoCad,
+      num_seats: this.state.numAssentosVeiculoCad,
+      seats_type: this.state.tipoAssentosVeiculoCad,
     }
   }
 
@@ -791,7 +821,7 @@ class SystemCompanyInsert extends Component {
   popularCamposHospedagemPost() {
     this.dataHosting = {
       active: true,
-      adresses:
+      adress:
       {
         additional: this.state.complementoHospedagem,
         adress: this.state.enderecoHospedagem,
@@ -812,6 +842,16 @@ class SystemCompanyInsert extends Component {
       tourism_regis: this.state.registroTurismo,
     }
   };
+
+  popularCamposVeiculoPost() {
+    this.dataVehicle = {
+      active: true,
+      id_vehicle: this.state.idVeiculo,
+      cnpj: this.removeCaractEspecial(this.state.cnpj),
+      id_vehicle_type: this.state.tipoVeiculo.idTipoVeiculo,
+      rntrc: this.state.rntrcVeiculo
+    }
+  }
 
   popularCamposEmpresaEdit(empresaSistema) {
     this.setState({
@@ -874,7 +914,7 @@ class SystemCompanyInsert extends Component {
     this.setState({ dataHosting: x })
   }
 
-  popularCamposVeiculoEdit(veiculoEmpresa){
+  popularCamposVeiculoEdit(veiculoEmpresa) {
     this.setState({
       activeVeiculo: veiculoEmpresa.data.active,
       idVeiculo: veiculoEmpresa.data.id_vehicle,
@@ -955,10 +995,34 @@ class SystemCompanyInsert extends Component {
         modelo: item.model,
         numAssentos: item.num_seats,
         tipoAssento: item.seats_type,
+        descricaoVeiculo: item.description,
       })
     });
     this.setState({
       tiposVeiculos: veiculos,
+    })
+  }
+
+  popularCamposVeiculoChangeDropdown(value, key) {
+    this.setState({
+      tipoVeiculo: {
+        idTipoVeiculo: value,
+        nomeTipoVeiculo: key
+      }
+    })
+    this.state.tiposVeiculos.forEach((item) => {
+      if (item.idTipoVeiculo === value) {
+        this.setState({
+          nomeVeiculo: item.nomeTipoVeiculo,
+          fabricanteVeiculo: item.fabricante,
+          modeloVeiculo: item.modelo,
+          descricaoVeiculo: item.descricaoVeiculo,
+          numAssentosVeiculo: item.numAssentos,
+          tipoAssentosVeiculo: item.tipoAssento,
+          banheiro: item.banheiro,
+          acessibilidade: item.acessibilidade,
+        })
+      }
     })
   }
 
@@ -1045,7 +1109,7 @@ class SystemCompanyInsert extends Component {
                 <Button key="back" onClick={this.cancelarModal}>
                   Cancelar
                 </Button>,
-                <Button key="submit" type="primary" loading={this.state.loadingModal}
+                <Button key="submit" type="primary" htmlType="submit" loading={this.state.loadingModal}
                   onClick={this.confirmarModalCadTpHospedagem}>
                   Cadastrar
                 </Button>,
@@ -1058,7 +1122,7 @@ class SystemCompanyInsert extends Component {
                   <form name="formTipoHospedagem" onSubmit={this.confirmarModalCadTpHospedagem}>
                     <ControlLabel>Nome Tipo Hospedagem</ControlLabel>
                     <input name="tipoHospedagemCad" value={this.state.tipoHospedagemCad}
-                      type="text" className="form-control"
+                      type="text" className="form-control" required
                       placeholder="Tipo Hospedagem" onChange={this.onChange} />
                   </form>
                 </div>
@@ -1145,7 +1209,7 @@ class SystemCompanyInsert extends Component {
                 <Row>
                   <div className="col-md-12">
                     <ControlLabel style={{ marginTop: "10px" }}>Descrição do veículo:</ControlLabel>
-                    <TextArea rows={4} name="descricaoVeiculo" value={this.state.descricaoVeiculo}
+                    <TextArea rows={4} name="descricaoVeiculoCad" value={this.state.descricaoVeiculoCad}
                       type="text" className="form-control" style={{ padding: "8px 12px", marginTop: "10px" }}
                       placeholder="Características gerais, possui frigobar TV, entre outros."
                       required onChange={this.onChange} />
@@ -1165,14 +1229,35 @@ class SystemCompanyInsert extends Component {
               cancelText="Cancelar"
               centered
             >
-              <div className="col-md-12" style={{ textAlign: 'center' }}>
-                Tem certeza que deseja desativar o
-                        </div>
-              <div className="col-md-12" style={{ textAlign: 'center' }}>
-                Socio(a) CPF: {this.state.cpfParaDesativar} ?
-                        </div>
-              <p></p>
-              <p></p>
+              <Row>
+                <div className="col-md-12" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Tem certeza que deseja desativar a Hospedagem?</ControlLabel>
+                </div>
+              </Row>
+              <Row>
+                <div className="col-md-6" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Tipo Hospedagem</ControlLabel>
+                  <input name="nomeTipoHospedagemDesativar" value={this.state.nomeTipoHospedagemDesativar}
+                    type="text" className="form-control" disabled style={{ textAlign: "center" }} />
+                </div>
+                <div className="col-md-6" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Qnt Pessoas</ControlLabel>
+                  <input name="qntPessoasDesativar" value={this.state.qntPessoasDesativar}
+                    type="text" className="form-control" disabled style={{ textAlign: "center" }} />
+                </div>
+              </Row>
+              <Row>
+                <div className="col-md-6" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Endereço</ControlLabel>
+                  <input name="enderecoHospedagemDesativar" value={this.state.enderecoHospedagemDesativar}
+                    type="text" className="form-control" disabled style={{ textAlign: "center" }} />
+                </div>
+                <div className="col-md-6" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Cidade</ControlLabel>
+                  <input name="cidadeHospedagemDesativar" value={this.state.cidadeHospedagemDesativar}
+                    type="text" className="form-control" disabled style={{ textAlign: "center" }} />
+                </div>
+              </Row>
             </Modal>
 
             <Modal
@@ -1184,14 +1269,35 @@ class SystemCompanyInsert extends Component {
               cancelText="Cancelar"
               centered
             >
-              <div className="col-md-12" style={{ textAlign: 'center' }}>
-                Tem certeza que deseja excluir os dados
-                        </div>
-              <div className="col-md-12" style={{ textAlign: 'center' }}>
-                Bancários Agencia: {this.state.agenciaDesativar} Conta: {this.state.contaDesativar}?
-                        </div>
-              <p></p>
-              <p></p>
+              <Row>
+                <div className="col-md-12" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Tem certeza que deseja desativar o Veículo?</ControlLabel>
+                </div>
+              </Row>
+              <Row>
+                <div className="col-md-6" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Nome Veículo</ControlLabel>
+                  <input name="nomeVeiculoDesativar" value={this.state.nomeVeiculoDesativar}
+                    type="text" className="form-control" disabled style={{ textAlign: "center" }} />
+                </div>
+                <div className="col-md-6" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Tipo Veículo</ControlLabel>
+                  <input name="tipoVeiculoDesativar" value={this.state.tipoVeiculoDesativar}
+                    type="text" className="form-control" disabled style={{ textAlign: "center" }} />
+                </div>
+              </Row>
+              <Row>
+                <div className="col-md-6" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Qnt Assentos</ControlLabel>
+                  <input name="qntAssentosDesativar" value={this.state.qntAssentosDesativar}
+                    type="text" className="form-control" disabled style={{ textAlign: "center" }} />
+                </div>
+                <div className="col-md-6" style={{ textAlign: 'center' }}>
+                  <ControlLabel style={{ marginTop: "10px" }}>Tipo Assento</ControlLabel>
+                  <input name="tipoAssentosVeiculoDesativar" value={this.state.tipoAssentosVeiculoDesativar}
+                    type="text" className="form-control" disabled style={{ textAlign: "center" }} />
+                </div>
+              </Row>
             </Modal>
             <Row>
               <>
@@ -1498,12 +1604,7 @@ class SystemCompanyInsert extends Component {
                           name="tipoVeiculo"
                           placeholder="Tipo veículo"
                           onChange={(value, key) =>
-                            this.setState({
-                              tipoVeiculo: {
-                                idTipoVeiculo: value,
-                                nomeTipoVeiculo: key
-                              }
-                            })
+                            this.popularCamposVeiculoChangeDropdown(value, key)
                           }
                           optionFilterProp="children"
                           filterOption={(input, option) =>
@@ -1547,7 +1648,7 @@ class SystemCompanyInsert extends Component {
                         <ControlLabel>Descrição do veículo:</ControlLabel>
                         <TextArea rows={4} name="descricaoVeiculo" value={this.state.descricaoVeiculo}
                           type="text" className="form-control" style={{ padding: "8px 12px", marginTop: "10px" }}
-                          placeholder="Características gerais, possui frigobar, TV, entre outros." 
+                          placeholder="Características gerais, possui frigobar, TV, entre outros."
                           required onChange={this.onChange} disabled />
                       </div>
                     </Row>
