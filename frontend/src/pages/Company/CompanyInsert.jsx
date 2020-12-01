@@ -109,6 +109,7 @@ class SystemCompanyInsert extends Component {
 
   state = {
     current: 0,
+    permiteAvancarPassos: false,
     loadingCep: false,
     loadingAvancar: false,
     loadingModal: false,
@@ -224,7 +225,9 @@ class SystemCompanyInsert extends Component {
           }
         })
         this.popularCamposEmpresaEdit(empresa);
-
+        this.setState({
+          permiteAvancarPassos: true,
+        });
       } catch (error) {
         if (error.response) {
           notification.error({
@@ -358,6 +361,9 @@ class SystemCompanyInsert extends Component {
         })
         notification.success({
           message: `Empresa atualizada com sucesso`,
+        });
+        this.setState({
+          permiteAvancarPassos: true,
         });
         this.nextStep();
       } catch (error) {
@@ -1073,7 +1079,14 @@ class SystemCompanyInsert extends Component {
   }
 
   onChangeStep = current => {
-    this.setState({ current });
+    if(this.state.permiteAvancarPassos){
+      this.setState({ current });
+    } else {
+      notification.warning({
+        message: "Favor preencher a aba Dados Principais",
+        description: "Necessário para poder cadastrar Hospedagem ou Transporte."
+      })
+    }
   };
 
   nextStep = () => {
