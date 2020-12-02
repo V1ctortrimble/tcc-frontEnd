@@ -1,17 +1,17 @@
 import React, { Component } from "react";
-import { Grid, Row, Col } from "react-bootstrap";
-import { Button, Table, notification, Tag, Modal } from "antd";
+import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
+import { Button, Table, Collapse, notification, Tag, Modal, Select } from "antd";
 import 'antd/dist/antd.css';
 import { EditFilled, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { cnpj } from "cpf-cnpj-validator";
-//import InputMask from "react-input-mask";
+import InputMask from "react-input-mask";
 import api from '../../services/api';
 import moment from 'moment';
 
-//const { Panel } = Collapse;
-//const { Option } = Select;
+const { Panel } = Collapse;
+const { Option } = Select;
 
-class SystemCompanyList extends Component {
+class CompanyList extends Component {
 
   columns = [
     {
@@ -65,10 +65,10 @@ class SystemCompanyList extends Component {
       render: (x) => {
         return x.status ?
           (<div>
-            <Button onClick={() => this.alterarEmpresaSistema(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+            <Button onClick={() => this.alterarEmpresa(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
             <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><CloseCircleOutlined /></Button>
           </div>) : <div>
-            <Button className="ant-btn-personalized" onClick={() => this.ativarEmpresaSistema(x)} type="primary" size="small" style={{ marginRight: '5%' }}><CheckCircleOutlined /></Button>
+            <Button className="ant-btn-personalized" onClick={() => this.ativarEmpresa(x)} type="primary" size="small" style={{ marginRight: '5%' }}><CheckCircleOutlined /></Button>
           </div>
       }
     },
@@ -104,7 +104,7 @@ class SystemCompanyList extends Component {
   dataCompany = {};
 
   handleClick = () => {
-    this.props.history.push("/admin/systemCompany/SystemCompanyInsert.jsx")
+    this.props.history.push("/admin/Company/CompanyInsert.jsx")
   }
 
   showModal = (x) => {
@@ -128,20 +128,24 @@ class SystemCompanyList extends Component {
     });
   };
 
-  alterarEmpresaSistema(x) {
+  alterarEmpresa(x) {
     let cnpj = this.removeCaractEspecial(x.cnpj);
-    this.props.history.push(`/admin/systemCompany/SystemCompanyInsert/${cnpj}`)
+    this.props.history.push(`/admin/Company/CompanyInsert/${cnpj}`)
   }
 
   removeCaractEspecial(texto) {
     return texto.replace(/[^a-zA-Z0-9]/g, '');
   }
 
-  async ativarEmpresaSistema(x) {
+  async ativarEmpresa(x) {
     let cnpj = this.removeCaractEspecial(x.cnpj);
     try {
       this.populaCamposAtivar(cnpj);
-      await api.put('api/companySystem', this.dataCompany);
+      await api.put('api/persons/company/', this.dataCompany, {
+        params: {
+          cnpj: cnpj
+        },
+      });
       notification.success({
         message: `Empresa ativada com sucesso`,
       });
@@ -159,9 +163,13 @@ class SystemCompanyList extends Component {
   async desativaEmpresaSistema() {
     try {
       this.populaCamposDesativar();
-      await api.put('api/companySystem', this.dataCompany);
+      await api.put('api/persons/company/', this.dataCompany, {
+        params: {
+          cnpj: this.removeCaractEspecial(this.state.cnpjParaDesativar)
+        },
+      });
       notification.warning({
-        message: `Empresa do sistema desativada com sucesso`,
+        message: `Empresa desativada com sucesso`,
       });
       this.buscarCompanyApi();
     } catch (error) {
@@ -180,15 +188,19 @@ class SystemCompanyList extends Component {
 
   populaCamposAtivar(cnpj) {
     this.dataCompany = {
-      active: true,
-      cnpj: cnpj
+      company: {
+        active: true,
+        cnpj: cnpj
+      }
     }
   }
 
   populaCamposDesativar() {
     this.dataCompany = {
-      active: false,
-      cnpj: this.removeCaractEspecial(this.state.cnpjParaDesativar)
+      company: {
+        active: false,
+        cnpj: this.removeCaractEspecial(this.state.cnpjParaDesativar)
+      }
     }
   }
 
@@ -212,47 +224,11 @@ class SystemCompanyList extends Component {
     }
   }
 
-  async buscarCompanyApi() {
+  async buscarCompanyApi(current = 0, size = 10) {
     this.setState({ loading: true });
     let x = [];
     try {
-      const data = await api.get('api/companySystem');
-      data.data.forEach((item, index) => {
-        x.push({
-          key: index,
-          cnpj: this.mascaraCnpj(item.cnpj),
-          fantasyName: item.fantasy_name,
-          socialReason: item.social_reason,
-          openDate: moment(item.open_date).format("DD/MM/YYYY"),
-          status: item.active
-        })
-      });
-      this.setState({ data: x })
-    } catch (error) {
-      if (error.response) {
-        if (error.response.status === 403) {
-          notification.warning({
-            message: "Aviso",
-            description: `Motivo: Usuário não autorizado`
-          });
-        } else {
-          notification.warning({
-            message: "Aviso",
-            description: `Motivo: ${error.response.data.message}`
-          });
-        }
-        this.setState({ data: "" });
-      }
-    } finally {
-      this.setState({ loading: false });
-    }
-  }
-
-  /*async buscarCompanyApi(current = 0, size = 10) {
-    this.setState({ loading: true });
-    let x = [];
-    try {
-      const data = await api.get('api/persons/company/filter', {
+      const data = await api.get('/api/persons/company/filter', {
         params: {
           page: current,
           size: size,
@@ -299,7 +275,7 @@ class SystemCompanyList extends Component {
     } finally {
       this.setState({ loading: false });
     }
-  }*/
+  }
 
   async componentDidMount() {
     this.buscarCompanyApi();
@@ -331,9 +307,9 @@ class SystemCompanyList extends Component {
             <Col md={12}>
               <Button onClick={this.handleClick} className="ant-btn-primary">Novo</Button>
               <p></p>
-              {/*<Collapse>
+              <Collapse>
                 <Panel header="Filtros" key="1">
-                  <form name="formFilterSystemCompany" onSubmit={this.filtrarDados}>
+                  <form name="formFilterCompany" onSubmit={this.filtrarDados}>
                     <Row>
                       <div className="col-md-3">
                         <ControlLabel>CNPJ</ControlLabel>
@@ -387,13 +363,11 @@ class SystemCompanyList extends Component {
                     </div>
                   </form>
                 </Panel>
-              </Collapse>*/}
+              </Collapse>
               <p></p>
               <Table columns={this.columns} dataSource={this.state.data}
-                loading={this.state.loading}
-                bordered scroll={{ x: 100 }}
-              />
-              {/*pagination={{
+              loading={this.state.loading} 
+              bordered scroll={{ x: 100 }} pagination={{
                 ...this.state.pager,
                 showTotal: total =>
                   `Total de ${total} ${total > 1 ? 'itens' : 'item'}`,
@@ -401,7 +375,7 @@ class SystemCompanyList extends Component {
                 showSizeChanger: true,
               }}
                 size="middle"
-            onChange={(pagination) => { this.buscarCompanyApi((pagination.current - 1), pagination.pageSize) }}*/}
+                onChange={(pagination) => { this.buscarCompanyApi((pagination.current - 1), pagination.pageSize) }} />
             </Col>
           </Row>
         </Grid>
@@ -410,4 +384,4 @@ class SystemCompanyList extends Component {
   }
 }
 
-export default SystemCompanyList;
+export default CompanyList;
