@@ -31,6 +31,7 @@ import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
 import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
 import PassengerList from "pages/Passenger/PassengerList.jsx"
 import PassengerInsert from "pages/Passenger/PassengerInsert.jsx"
+import TravelPackageList from "pages/TravelPackage/TravelPackageList.jsx"
 
 const dashboardRoutes = [
   {
@@ -105,6 +106,15 @@ const dashboardRoutes = [
     component: PassengerInsert,
     layout: "/admin",
     visibleOnMenu: false,
+  },
+  {
+    pathN: "/TravelPackage/TravelPackageList.jsx",
+    path: "/TravelPackage/TravelPackageList.jsx",
+    name: "Pacotes de Viagens",
+    icon: "pe-7s-culture",
+    component: TravelPackageList,
+    layout: "/admin",
+    visibleOnMenu: true,
   },
  /* 
  {
