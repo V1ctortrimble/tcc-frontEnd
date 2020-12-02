@@ -32,6 +32,7 @@ import SystemCompanyInsert from "pages/SystemCompany/SystemCompanyInsert.jsx"
 import PassengerList from "pages/Passenger/PassengerList.jsx"
 import PassengerInsert from "pages/Passenger/PassengerInsert.jsx"
 import TravelPackageList from "pages/TravelPackage/TravelPackageList.jsx"
+import TravelPackageInsert from "pages/TravelPackage/TravelPackageInsert.jsx"
 import Company from "pages/Company/CompanyList.jsx"
 import CompanyInsert from "pages/Company/CompanyInsert.jsx"
 
@@ -82,6 +83,30 @@ const dashboardRoutes = [
     name: "Alterar Empresa",
     icon: "pe-7s-airplay",
     component: CompanyInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/TravelPackage/TravelPackageList.jsx",
+    name: "Pacotes de Viagens",
+    icon: "pe-7s-world",
+    component: TravelPackageList,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
+  {
+    path: "/TravelPackage/TravelPackageInsert.jsx",
+    name: "Cadastro de Pacote de Viagem",
+    icon: "pe-7s-culture",
+    component: TravelPackageInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/TravelPackage/TravelPackageInsert:id",
+    name: "Alterar Pacote de Viagem",
+    icon: "pe-7s-culture",
+    component: TravelPackageInsert,
     layout: "/admin",
     visibleOnMenu: false,
   },
@@ -141,31 +166,7 @@ const dashboardRoutes = [
     layout: "/admin",
     visibleOnMenu: true,
   },
-  {
-    path: "/Passenger/PassengerInsert.jsx",
-    name: "Cadastro de Passageiro",
-    icon: "pe-7s-culture",
-    component: PassengerInsert,
-    layout: "/admin",
-    visibleOnMenu: false,
-  },
-  {
-    path: "/Passenger/PassengerInsert/:cpf",
-    name: "Alterar Passageiro",
-    icon: "pe-7s-culture",
-    component: PassengerInsert,
-    layout: "/admin",
-    visibleOnMenu: false,
-  },
-  {
-    pathN: "/TravelPackage/TravelPackageList.jsx",
-    path: "/TravelPackage/TravelPackageList.jsx",
-    name: "Pacotes de Viagens",
-    icon: "pe-7s-culture",
-    component: TravelPackageList,
-    layout: "/admin",
-    visibleOnMenu: true,
-  },
+  
  /* 
  {
     path: "/user",

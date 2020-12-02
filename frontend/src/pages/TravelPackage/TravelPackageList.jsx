@@ -122,7 +122,7 @@ class PassengerList extends Component {
     dataPacoteViagem = {};
 
     handleClick = () => {
-        this.props.history.push("/admin/TravelPagckage/TravelPackageList")
+        this.props.history.push("/admin/TravelPackage/TravelPackageInsert.jsx")
     }
 
     showModal = (x) => {
