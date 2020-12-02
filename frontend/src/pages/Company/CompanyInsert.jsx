@@ -362,9 +362,6 @@ class SystemCompanyInsert extends Component {
         notification.success({
           message: `Empresa atualizada com sucesso`,
         });
-        this.setState({
-          permiteAvancarPassos: true,
-        });
         this.nextStep();
       } catch (error) {
         if (error.response) {
@@ -382,6 +379,9 @@ class SystemCompanyInsert extends Component {
         await api.post('api/persons/company', this.dataCompany);
         notification.success({
           message: `Empresa cadastrada com sucesso`,
+        });
+        this.setState({
+          permiteAvancarPassos: true,
         });
         this.nextStep();
       }
