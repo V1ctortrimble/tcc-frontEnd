@@ -5,7 +5,7 @@ import 'antd/dist/antd.css';
 import { EditFilled, UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons';
 import api from "services/api";
 import moment from 'moment';
-import InputMask from "react-input-mask";
+//import InputMask from "react-input-mask";
 
 const { Panel } = Collapse;
 const { Option } = Select;

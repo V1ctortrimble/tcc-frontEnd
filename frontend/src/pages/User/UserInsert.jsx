@@ -136,7 +136,6 @@ class UserProfile extends Component {
           notification.success({
             message: `Usuario(a) cadastrado com sucesso`,
           });
-          console.log(this.dataUser);
           this.limpaCamposUsuario();
         }
         catch (error) {
