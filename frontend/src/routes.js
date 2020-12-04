@@ -33,6 +33,7 @@ import PassengerList from "pages/Passenger/PassengerList.jsx"
 import PassengerInsert from "pages/Passenger/PassengerInsert.jsx"
 import Company from "pages/Company/CompanyList.jsx"
 import CompanyInsert from "pages/Company/CompanyInsert.jsx"
+import ContractList from "pages/Contract/ContractList.jsx"
 
 
 const dashboardRoutes = [
@@ -137,6 +138,14 @@ const dashboardRoutes = [
     name: "Icons",
     icon: "pe-7s-science",
     component: Icons,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
+  {
+    path: "/Contract/ContractList.jsx",
+    name: "Contract",
+    icon: "pe-7s-add-user",
+    component: ContractList,
     layout: "/admin",
     visibleOnMenu: true,
   },
