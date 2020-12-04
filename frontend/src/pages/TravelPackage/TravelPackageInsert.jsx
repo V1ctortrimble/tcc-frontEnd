@@ -12,6 +12,7 @@ const { TextArea } = Input;
 const { Option } = Select;
 
 class TravelPackageInsert extends Component {
+
     state = {
         active: true,
         loading: false,
@@ -30,27 +31,32 @@ class TravelPackageInsert extends Component {
         precoAdulto: "",
         precoCrianca: "",
         formaPagamento: "",
-        idHospedagem: null,
-        hospedagem: "",
-        idLocalHospedagem: null,
-        localHospedagem: "",
+        empresaHospedagem: [{
+            cnpjEmpresaHospedagem: "",
+            nomeFantasia: "",
+        }],
+        localHospedagem: [{}],
         hospedagens: [{}],
         locaisHospedagens: [{}],
         idTransporte: null,
         transporte: "",
         idVeiculoTransporte: null,
-        veiculoTransporte: "",
+        empresaTransporteValidar: null,
+        empresaTransporte: [{}],
+        veiculoTransporte: [{}],
         transportes: [{}],
         veiculosTransportes: [{}],
+        veiculosTransportesSelect: [{ veiculoEmpresa: [] }],
         empresas: [{}],
     };
+
+    formCadastroPctViagem = {};
 
     dataTravelPackage = {};
 
     horas = {};
 
     saveTravelPackage = async () => {
-        //e.preventDefault();
         this.setState({
             loading: true,
         })
@@ -271,6 +277,7 @@ class TravelPackageInsert extends Component {
         const field = event.target.name;
         state[field] = event.target.value;
         this.setState(state);
+        console.log(this.state);
     }
 
     juntarHorasInicio = (horaPacote) => {
@@ -290,6 +297,71 @@ class TravelPackageInsert extends Component {
     toBackList = () => {
         this.props.history.push("/admin/TravelPackage/TravelPackageList.jsx")
     }
+
+    addEmpresaHospedagem(value, key, index) {
+        let temp = this.state.empresaHospedagem;
+        temp[index] = {
+            cnpjEmpresaHospedagem: value,
+            nomeFantasia: key
+        }
+        this.setState({
+            empresaHospedagem: temp,
+        })
+    }
+
+    addLocalHospedagem(value, key, index) {
+        let temp = this.state.localHospedagem;
+        temp[index] = {
+            idLocalHospedagem: value,
+            cnpjHospedagem: key
+        }
+        this.setState({
+            localHospedagem: temp,
+        })
+    }
+
+    addEmpresaTransporte(value, key, index) {
+        let temp = this.state.empresaTransporte;
+        let veiculos = this.state.veiculosTransportes;
+        let x = [];
+        let veicEmpresa = this.state.veiculosTransportesSelect;
+        temp[index] = {
+            cnpjEmpresaTransporte: value,
+            nomeFantasia: key
+        }
+        veiculos.forEach((item) => {
+            if (item.empresa.cnpj === value) {
+                x.push({
+                    veiculoEmpresa: {
+                        cnpj: item.empresa.cnpj,
+                        idVeiculo: item.idVeiculo,
+                        nomeTipoVeiculo: item.tipoVeiculo.nomeTipoVeiculo,
+                        fabricante: item.tipoVeiculo.fabricante,
+                        numAssentos: item.tipoVeiculo.numAssentos,
+                    }
+                }
+                )
+            }
+        })
+        veicEmpresa[index] = x;
+        this.setState({
+            empresaTransporte: temp,
+            empresaTransporteValidar: value,
+            veiculosTransportesSelect: veicEmpresa,
+        })
+    }
+
+    addVeiculoTransporte(value, key, index) {
+        let temp = this.state.veiculoTransporte;
+        temp[index] = {
+            idVeiculoTransporte: key,
+            cnpjVeiculo: value,
+        }
+        this.setState({
+            veiculoTransporte: temp,
+        })
+    }
+
 
     async componentDidMount() {
         if (this.props.match.params.id != null) {
@@ -366,6 +438,7 @@ class TravelPackageInsert extends Component {
     }
 
     render() {
+
         return (
             <div className="content">
                 <Card content={
@@ -374,7 +447,7 @@ class TravelPackageInsert extends Component {
                         </Row>
                         <Row>
                             <Col md={12}>
-                                <Form name="formPacoteViagem" onFinish={this.saveTravelPackage}>
+                                <Form name="formCadastroPctViagem" onFinish={this.saveTravelPackage}>
                                     <Row>
                                         <div className="col-md-2">
                                             <ControlLabel>Código Identificador</ControlLabel>
@@ -492,29 +565,22 @@ class TravelPackageInsert extends Component {
                                             <Form.List name="hospedagens">
                                                 {(fields, { add, remove }) => (
                                                     <>
-                                                        {fields.map(field => (
+                                                        {fields.map((field, index) => (
                                                             <Space key={field.key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
                                                                 <Form.Item
                                                                     {...field}
-                                                                    name={[field.name, 'hospedagem']}
-                                                                    fieldKey={[field.fieldKey, 'idHospedagem']}
+                                                                    name={[field.name, 'empresaHospedagem']}
+                                                                    fieldKey={[field.fieldKey, 'idEmpresaHospedagem']}
                                                                     rules={[{ required: true, message: 'Seleciona a Hospedagem' }]}
                                                                 >
                                                                     <Select
-                                                                        style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '200px' }}
+                                                                        style={{ textAlign: 'left', marginTop: '5px', fontSize: '14px', width: '300px' }}
                                                                         showSearch
                                                                         required
-                                                                        value={this.state.idHospedagem}
+                                                                        value={this.state.empresaHospedagem.idEmpresaHospedagem}
                                                                         name="empresaHospedagem"
                                                                         placeholder="Selecione a empresa"
-                                                                        /*onChange={(value, key) =>
-                                                                            this.setState({
-                                                                                empresaSistema: {
-                                                                                    cnpj: value,
-                                                                                    empresa: key
-                                                                                }
-                                                                            })
-                                                                        }*/
+                                                                        onChange={(value, key) => this.addEmpresaHospedagem(value, key, index)}
                                                                         optionFilterProp="children"
                                                                         filterOption={(input, option) =>
                                                                             option.children
@@ -522,9 +588,9 @@ class TravelPackageInsert extends Component {
                                                                                 .indexOf(input.toLowerCase()) >= 0
                                                                         }
                                                                     >
-                                                                        {this.state.hospedagens.map((item) => (
-                                                                            <Option value={item.idHospedagem} key={item.idHospedagem}>
-                                                                                {item.hospedagem}
+                                                                        {this.state.empresas.map((item) => (
+                                                                            <Option value={item.cnpj} key={item.fantasyName}>
+                                                                                {item.fantasyName}
                                                                             </Option>
                                                                         ))}
                                                                     </Select>
@@ -536,20 +602,14 @@ class TravelPackageInsert extends Component {
                                                                     rules={[{ required: true, message: 'Selecione o local de Hospedagem' }]}
                                                                 >
                                                                     <Select
-                                                                        style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '200px' }}
+                                                                        style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '300px' }}
                                                                         showSearch
                                                                         required
-                                                                        value={this.state.idLocalHospedagem}
+                                                                        value={this.state.localHospedagem.idLocalHospedagem}
                                                                         name="localHospedagem"
                                                                         placeholder="Selecione o local"
-                                                                        /*onChange={(value, key) =>
-                                                                            this.setState({
-                                                                                empresaSistema: {
-                                                                                    cnpj: value,
-                                                                                    empresa: key
-                                                                                }
-                                                                            })
-                                                                        }*/
+                                                                        onChange={(value, key) => this.addLocalHospedagem(value, key, index)
+                                                                        }
                                                                         optionFilterProp="children"
                                                                         filterOption={(input, option) =>
                                                                             option.children
@@ -558,8 +618,8 @@ class TravelPackageInsert extends Component {
                                                                         }
                                                                     >
                                                                         {this.state.locaisHospedagens.map((item) => (
-                                                                            <Option value={item.idLocalHospedagem} key={item.idLocalHospedagem}>
-                                                                                {item.localHospedagem}
+                                                                            <Option value={item.idHospedagem} key={item.cnpj}>
+                                                                                {item.tipoHospedagem.nomeTipoHospedagem} - {item.quantidadePessoas} Pessoas
                                                                             </Option>
                                                                         ))}
                                                                     </Select>
@@ -580,7 +640,7 @@ class TravelPackageInsert extends Component {
                                             <Form.List name="transportes">
                                                 {(fields, { add, remove }) => (
                                                     <>
-                                                        {fields.map(field => (
+                                                        {fields.map((field, index) => (
                                                             <Space key={field.key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
                                                                 <Form.Item
                                                                     {...field}
@@ -589,20 +649,13 @@ class TravelPackageInsert extends Component {
                                                                     rules={[{ required: true, message: 'Seleciona a Empresa de Transporte' }]}
                                                                 >
                                                                     <Select
-                                                                        style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '200px' }}
+                                                                        style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '10%' }}
                                                                         showSearch
                                                                         required
-                                                                        value={this.state.idTransporte}
+                                                                        value={this.state.empresaTransporteValidar}
                                                                         name="empresaTransporte"
                                                                         placeholder="Selecione a empresa"
-                                                                        /*onChange={(value, key) =>
-                                                                            this.setState({
-                                                                                empresaSistema: {
-                                                                                    cnpj: value,
-                                                                                    empresa: key
-                                                                                }
-                                                                            })
-                                                                        }*/
+                                                                        onChange={(value, key) => this.addEmpresaTransporte(value, key, index)}
                                                                         optionFilterProp="children"
                                                                         filterOption={(input, option) =>
                                                                             option.children
@@ -610,47 +663,57 @@ class TravelPackageInsert extends Component {
                                                                                 .indexOf(input.toLowerCase()) >= 0
                                                                         }
                                                                     >
-                                                                        {this.state.transportes.map((item) => (
-                                                                            <Option value={item.idTransporte} key={item.idTransporte}>
-                                                                                {item.transporte}
+                                                                        {this.state.empresas.map((item) => (
+                                                                            <Option value={item.cnpj} key={item.fantasyName}>
+                                                                                {item.fantasyName}
                                                                             </Option>
                                                                         ))}
                                                                     </Select>
                                                                 </Form.Item>
                                                                 <Form.Item
-                                                                    {...field}
-                                                                    name={[field.name, 'veiculoTransporte']}
-                                                                    fieldKey={[field.fieldKey, 'idVeiculoTransporte']}
-                                                                    rules={[{ required: true, message: 'Selecione o veículo de transporte' }]}
-                                                                >
-                                                                    <Select
-                                                                        style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '200px' }}
-                                                                        showSearch
-                                                                        required
-                                                                        value={this.state.idVeiculoTransporte}
-                                                                        name="veiculoTransporte"
-                                                                        placeholder="Selecione o local"
-                                                                        /*onChange={(value, key) =>
-                                                                            this.setState({
-                                                                                empresaSistema: {
-                                                                                    cnpj: value,
-                                                                                    empresa: key
+                                                                    noStyle
+                                                                    shouldUpdate={(prevValues, curValues) =>
+                                                                        prevValues.empresaTransporte !== curValues.empresaTransporte
+                                                                    }>
+                                                                    {() => (
+                                                                        <Form.Item
+                                                                            {...field}
+                                                                            name={[field.name, 'veiculoTransporte']}
+                                                                            fieldKey={[field.fieldKey, 'idVeiculoTransporte']}
+                                                                            rules={[{ required: true, message: 'Selecione o veículo de transporte' }]}
+                                                                        >
+                                                                            <Select disabled={this.empresaTransporteValidar}
+                                                                                style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '90%px' }}
+                                                                                showSearch
+                                                                                required
+                                                                                value={this.state.veiculoTransporte.idVeiculoTransporte}
+                                                                                name="veiculoTransporte"
+                                                                                placeholder="Selecione o Veículo"
+                                                                                onChange={(value, key) => console.log(value, key)}
+                                                                                optionFilterProp="children"
+                                                                                filterOption={(input, option) =>
+                                                                                    option.children
+                                                                                        .toLowerCase()
+                                                                                        .indexOf(input.toLowerCase()) >= 0
                                                                                 }
-                                                                            })
-                                                                        }*/
-                                                                        optionFilterProp="children"
-                                                                        filterOption={(input, option) =>
-                                                                            option.children
-                                                                                .toLowerCase()
-                                                                                .indexOf(input.toLowerCase()) >= 0
-                                                                        }
-                                                                    >
-                                                                        {this.state.veiculosTransportes.map((item) => (
-                                                                            <Option value={item.idVeiculoTransporte} key={item.idVeiculoTransporte}>
-                                                                                {item.veiculoTransporte}
-                                                                            </Option>
-                                                                        ))}
-                                                                    </Select>
+                                                                            >
+                                                                                {this.state.veiculosTransportes.map((item) => (
+                                                                                    <Option value={item.idVeiculo} key={item.idVeiculo}>
+                                                                                        {item.empresa.nomeFantasia}: {item.tipoVeiculo.nomeTipoVeiculo} - {item.tipoVeiculo.numAssentos} Pessoas
+                                                                                    </Option>
+                                                                                ))
+                                                                                
+                                                                                /*this.state.veiculosTransportesSelect.map((item, ind) => {
+                                                                                    return (ind === index) ?
+                                                                                       item.veiculoEmpresa.map((item) =>
+                                                                                            <Option value={item.cnpj} key={item.idVeiculo}>
+                                                                                                {item.nomeTipoVeiculo} - {item.fabricante} - {item.numAssentos} pessoas
+                                                                                            </Option>
+                                                                                        ) : null
+                                                                                })*/}
+                                                                            </Select>
+                                                                        </Form.Item>
+                                                                    )}
                                                                 </Form.Item>
                                                                 <MinusCircleOutlined onClick={() => remove(field.name)} />
                                                             </Space>
