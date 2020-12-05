@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
 import { Button, Table, Collapse, notification, Modal, Tag, Select } from "antd";
 import 'antd/dist/antd.css';
-import { EditFilled, UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons';
+import { EditFilled, UserAddOutlined, UserDeleteOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import api from "services/api";
 import moment from 'moment';
 //import InputMask from "react-input-mask";
@@ -15,51 +15,52 @@ class PassengerList extends Component {
     columns = [
         {
             title: 'Codigo',
-            width: 120,
+            width: 50,
             dataIndex: 'codigo',
             key: 'codigo',
             fixed: 'left',
+            align: 'center',
         },
         {
             title: 'Nome Viagem',
-            width: 120,
-            dataIndex: 'nameViagem',
-            key: 'nameViagem',
-            fixed: 'left',
-        },
-        {
-            title: 'Local Destino',
-            width: 120,
-            dataIndex: 'localDstino',
-            key: 'localDstino',
+            width: 100,
+            dataIndex: 'nomeViagem',
+            key: 'nomeViagem',
             fixed: 'left',
         },
         {
             title: 'local Origem',
-            width: 120,
-            dataIndex: 'localorigem',
-            key: 'localorigem',
+            width: 80,
+            dataIndex: 'localOrigem',
+            key: 'localOrigem',
+            fixed: 'left',
+        },
+        {
+            title: 'Local Destino',
+            width: 80,
+            dataIndex: 'localDestino',
+            key: 'localDestino',
             fixed: 'left',
         },
         {
             title: 'Data Inicio',
-            width: 90,
-            dataIndex: 'datainicio',
-            key: 'datainicio',
+            width: 50,
+            dataIndex: 'dataInicio',
+            key: 'dataInicio',
             fixed: 'left',
             align: 'center'
         },
         {
             title: 'Data Fim',
-            width: 90,
-            dataIndex: 'datafim',
-            key: 'datafim',
+            width: 50,
+            dataIndex: 'dataFim',
+            key: 'dataFim',
             fixed: 'left',
             align: 'center'
         },
         {
             title: 'Status',
-            width: 100,
+            width: 50,
             dataIndex: 'status',
             key: 'status',
             fixed: 'left',
@@ -79,9 +80,14 @@ class PassengerList extends Component {
             width: 80,
             render: (x) => {
                 return x.status ?
-                    (<div>
-                        <Button onClick={() => this.alterarViagem(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
-                        <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><UserDeleteOutlined /></Button>
+                    (<div className="center">
+                        <div>
+                            <Button onClick={() => this.imprimirListaPassageiros(x)} loading={this.state.loadingListaPassageiros} type="primary" size="small" style={{ marginRight: '5%' }}><UnorderedListOutlined />Passageiros</Button>
+                        </div>
+                        <div style={{marginTop: '5px'}}>
+                            <Button onClick={() => this.alterarViagem(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+                            <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><UserDeleteOutlined /></Button>
+                        </div>
                     </div>) : <div>
                         <Button className="ant-btn-personalized" onClick={() => this.ativarViagem(x)} type="primary" size="small" style={{ marginRight: '5%' }}><UserAddOutlined /></Button>
                     </div>
@@ -90,22 +96,23 @@ class PassengerList extends Component {
     ];
 
     state = {
+        loadingListaPassageiros: false,
         data: [{}],
         pager: {
-            current: "",
-            pageSize: "",
+            current: 1,
+            pageSize: 10,
             total: "",
         },
         codigo: "",
         nomeViagem: "",
-        localDstino: "",
-        localorigem: "",
-        dataInicio:"",
-        dataFim:"",
+        localDestino: "",
+        localOrigem: "",
+        dataInicio: "",
+        dataFim: "",
         loading: false,
         visible: false,
-        codigoParaDesativar: "",
-        codigoParaAtivar: "",
+        codigoParaDesativar: null,
+        codigoParaAtivar: null,
         status: true,
         statusOpcoes: [
             {
@@ -147,7 +154,31 @@ class PassengerList extends Component {
     };
 
     alterarViagem(x) {
-        this.props.history.push(`/admin/TravelPackage/TravelPackageList/`)
+        let idViagem = x.codigo;
+        this.props.history.push(`/admin/TravelPackage/TravelPackageInsert/${idViagem}`)
+    }
+
+    async imprimirListaPassageiros(x) {
+        let idtravelpackage = Number(x.codigo)
+        try {
+            this.setState({ loadingListaPassageiros: true });
+            await api.get('api/list/pdf', {
+                params: {
+                    idtravelpackage: idtravelpackage
+                }
+            })
+        } catch (error) {
+            if (error.response) {
+                notification.error({
+                    message: 'Não foi possível imprimir a lista de passageiros',
+                    description: `Motivo: ${error.response.data.message}`
+                })
+            }
+
+        } finally {
+            this.setState({ loadingListaPassageiros: false })
+        }
+
     }
 
     async ativarViagem(x) {
@@ -160,7 +191,7 @@ class PassengerList extends Component {
                 },
             });
             notification.success({
-                message: `Viage ativada com sucesso`,
+                message: `Viagem ativada com sucesso`,
             });
             this.buscarIndividualApi();
         } catch (error) {
@@ -205,7 +236,7 @@ class PassengerList extends Component {
         this.dataPacoteViagem = {
             individual: {
                 active: false,
-                codigo:x.codigo
+                codigo: x.codigo
             }
         }
     }
@@ -215,32 +246,32 @@ class PassengerList extends Component {
         const field = event.target.name;
         state[field] = event.target.value;
         this.setState(state);
-        console.log(this.state);
     }
 
     async buscarIndividualApi(current = 0, size = 10) {
         this.setState({ loading: true });
         let x = [];
         try {
-            const data = await api.get('api/persons/individual/filter', {
+            const data = await api.get('api/travelpackage/filter', {
                 params: {
                     page: current,
                     size: size,
-                    name: this.state.nome,
-                    lastname: this.state.sobreNome,
-                    rg: this.state.rg,
-                    sort: 'nameIndividual,asc',
+                    idtravelpackage: this.state.codigo,
+                    nametravelpackage: this.state.nomeViagem,
+                    destinationName: this.state.localDestino,
+                    originname: this.state.localOrigem,
                     active: this.state.status
                 },
             });
             data.data.content.forEach((item, index) => {
                 x.push({
                     key: index,
-                    codigo: item.codigo,
-                    name: item,
-                    sobrenome: item.last_name,
-                    rg: item.rg,
-                    datanasc: moment(item.birth_date).format("DD/MM/YYYY"),
+                    codigo: item.id_travel_package,
+                    nomeViagem: item.name_travel_package,
+                    localDestino: item.destination_name,
+                    localOrigem: item.origin_name,
+                    dataInicio: moment(item.start_date).format("DD/MM/YYYY"),
+                    dataFim: moment(item.end_date).format("DD/MM/YYYY"),
                     status: item.active
                 })
             })
@@ -265,7 +296,7 @@ class PassengerList extends Component {
                         description: `Motivo: ${error.response.data.message}`
                     });
                 }
-                
+
                 this.setState({ data: "" });
                 this.setState({
                     pager: {
@@ -298,10 +329,10 @@ class PassengerList extends Component {
                         centered
                     >
                         <div className="col-md-12" style={{ textAlign: 'center' }}>
-                            Tem certeza que deseja desativar o
+                            Tem certeza que deseja desativar
                         </div>
                         <div className="col-md-12" style={{ textAlign: 'center' }}>
-                            codigo de viagem: {this.state.codigoParaDesativar} ?
+                            a viagem de código: {this.state.codigoParaDesativar} ?
                         </div>
                         <p></p>
                         <p></p>
@@ -328,14 +359,14 @@ class PassengerList extends Component {
                                             </div>
                                             <div className="col-md-3">
                                                 <ControlLabel>Local Origem</ControlLabel>
-                                                <input name="localOrigem" value={this.state.localorigem}
+                                                <input name="localOrigem" value={this.state.localOrigem}
                                                     type="text" className="form-control"
                                                     placeholder="" onChange={this.onChange} />
                                             </div>
 
                                             <div className="col-md-3">
                                                 <ControlLabel>Local Destino</ControlLabel>
-                                                <input name="localDestino" value={this.state.nome}
+                                                <input name="localDestino" value={this.state.localDestino}
                                                     type="text" className="form-control"
                                                     placeholder="" onChange={this.onChange} />
                                             </div>

@@ -103,7 +103,7 @@ const dashboardRoutes = [
     visibleOnMenu: false,
   },
   {
-    path: "/TravelPackage/TravelPackageInsert:id",
+    path: "/TravelPackage/TravelPackageInsert/:id",
     name: "Alterar Pacote de Viagem",
     icon: "pe-7s-culture",
     component: TravelPackageInsert,
