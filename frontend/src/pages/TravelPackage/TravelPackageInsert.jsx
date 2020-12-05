@@ -124,10 +124,11 @@ class TravelPackageInsert extends Component {
         var horaFim = Number(horasFim[0]);
         var minutoFim = Number(horasFim[1]);
         this.dataTravelPackage = {
+            id_travel_package: this.state.idPacoteViavgem,
             active: true,
             adult_price: this.state.precoAdulto,
             child_price: this.state.precoCrianca,
-            desc_travel_package: this.state.descViagem,
+            descr_travel_package: this.state.descViagem,
             destination_name: this.state.localDestino,
             end_date: this.state.dataFim,
             estimated_end_time: [horaFim, minutoFim, 0, 0],
