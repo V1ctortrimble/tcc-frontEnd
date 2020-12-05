@@ -97,3 +97,11 @@ form input {
 .back-link:hover{
     opacity: 0.8;
 }
+
+.center {
+    display: flex;
+    /*flex-wrap: wrap;*/
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}

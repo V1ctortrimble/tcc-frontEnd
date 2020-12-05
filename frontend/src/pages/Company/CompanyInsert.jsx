@@ -859,24 +859,24 @@ class SystemCompanyInsert extends Component {
     }
   }
 
-  popularCamposEmpresaEdit(empresaSistema) {
+  popularCamposEmpresaEdit(empresa) {
     this.setState({
-      active: empresaSistema.data.company.active,
-      idEmpresaSistema: empresaSistema.data.id_person,
-      cnpj: empresaSistema.data.company.cnpj,
-      razaoSocial: empresaSistema.data.company.social_reason,
-      nomeFantasia: empresaSistema.data.company.fantasy_name,
-      dataAbertura: empresaSistema.data.company.open_date,
-      telefone: empresaSistema.data.contacts[0].phone,
-      celular: empresaSistema.data.contacts[0].cell_phone,
-      email: empresaSistema.data.contacts[0].email,
-      cep: empresaSistema.data.adresses[0].zip_code,
-      endereco: empresaSistema.data.adresses[0].adress,
-      numero: empresaSistema.data.adresses[0].adress_number,
-      complemento: empresaSistema.data.adresses[0].additional,
-      bairro: empresaSistema.data.adresses[0].neighborhood,
-      cidade: empresaSistema.data.adresses[0].city,
-      estado: empresaSistema.data.adresses[0].state,
+      active: empresa.data.company.active,
+      idEmpresa: empresa.data.id_person,
+      cnpj: empresa.data.company.cnpj,
+      razaoSocial: empresa.data.company.social_reason,
+      nomeFantasia: empresa.data.company.fantasy_name,
+      dataAbertura: empresa.data.company.open_date,
+      telefone: empresa.data.contacts[0].phone,
+      celular: empresa.data.contacts[0].cell_phone,
+      email: empresa.data.contacts[0].email,
+      cep: empresa.data.adresses[0].zip_code,
+      endereco: empresa.data.adresses[0].adress,
+      numero: empresa.data.adresses[0].adress_number,
+      complemento: empresa.data.adresses[0].additional,
+      bairro: empresa.data.adresses[0].neighborhood,
+      cidade: empresa.data.adresses[0].city,
+      estado: empresa.data.adresses[0].state,
       desabilitarCampoCnpj: true,
     })
   }
