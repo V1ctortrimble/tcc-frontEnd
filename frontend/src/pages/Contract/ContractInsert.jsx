@@ -9,7 +9,10 @@ import moment from "moment";
 
 const { Option } = Select;
 
+
 class ContractInsert extends Component {
+
+    form = React.createRef();
 
     state = {
         loading: false,
@@ -35,6 +38,7 @@ class ContractInsert extends Component {
         passageiros: [{}],
         passageiroContratante: {
             idPessoa: null,
+            idPessoaContrato: null,
             nomePessoa: "",
             sobreNomePessoa: "",
             cpfPessoa: "",
@@ -44,6 +48,7 @@ class ContractInsert extends Component {
         },
         passageiroAcompanhante: null,
         passageirosAcompanhantesPost: null,
+        passageirosAcompanhantesRemove: null,
         localEmbarque: "",
         localDesembarque: "",
 
@@ -51,9 +56,9 @@ class ContractInsert extends Component {
 
     dataContract = {};
 
-    limpaCamposContrato() {
+    limpaCamposContrato = async () => {
         this.setState({
-            idContrato: null,
+            idContrato: "",
             empresaContratada: {
                 idEmpresaContratada: null,
                 cnpjContratada: "",
@@ -76,16 +81,11 @@ class ContractInsert extends Component {
                 celularPessoa: "",
                 telefonePessoa: "",
             },
-            passageiroAcompanhante: [{
-                idPassageiroAcompanhante: null,
-                nomePessoa: "",
-                sobreNomePessoa: "",
-                cpfPessoa: "",
-                rgPessoa: ""
-            }],
+            passageiroAcompanhante: null,
             localEmbarque: "",
             localDesembarque: "",
         })
+        this.props.history.push(`/admin/Contract/ContractInsert.jsx`)
     }
 
     saveContract = async () => {
@@ -93,8 +93,11 @@ class ContractInsert extends Component {
         if (this.state.idContrato !== null) {
             try {
                 this.popularCamposContratoPost();
-                const response = await api.put('api/travelcontract', this.dataContract);
-                console.log(response);
+                await api.put('api/travelcontract', this.dataContract, {
+                    params: {
+                        id: this.state.idContrato,
+                    }
+                });
                 notification.success({
                     message: "Contrato atualizado com sucesso",
                 })
@@ -113,7 +116,9 @@ class ContractInsert extends Component {
             try {
                 this.popularCamposContratoPost();
                 const response = await api.post('api/travelcontract', this.dataContract);
-                console.log(response);
+                this.setState({
+                    idContrato: response.data.id_travel_contract,
+                })
                 notification.success({
                     message: "Contrato cadastrado com sucesso",
                 })
@@ -133,6 +138,7 @@ class ContractInsert extends Component {
     popularCamposContratoPost() {
         this.populaAcompanhantes();
         this.dataContract = {
+            active: true,
             boarding_location: this.state.localEmbarque,
             id_company: this.state.empresaContratada.idEmpresaContratada,
             id_travel_contract: this.state.idContrato,
@@ -141,8 +147,10 @@ class ContractInsert extends Component {
             landingLocation: this.state.localDesembarque,
             passenger: {
                 contracted_passenger: true,
+                id_passenger_travel_contract: this.state.passageiroContratante.idPessoaContrato,
                 id_individual: this.state.passageiroContratante.idPessoa,
                 paying_passenger: true,
+
             },
             passengers: this.state.passageirosAcompanhantesPost,
             total_contract_amount: 0,
@@ -151,20 +159,77 @@ class ContractInsert extends Component {
 
     populaAcompanhantes() {
         let acompanhantes = this.state.passageiroAcompanhante;
-        let x = null;
+        let x = [];
         if (acompanhantes) {
-            console.log("Passei aqui")
             acompanhantes.forEach((item) => {
-                x.push({
-                    contracted_passenger: false,
-                    id_individual: item.idPassageiroAcompanhante,
-                    paying_passenger: false,
-                })
+                if (item.passageiroAcompanhante) {
+                    x.push({
+                        contracted_passenger: false,
+                        id_passenger_travel_contract: item.idPessoaContrato,
+                        id_individual: item.passageiroAcompanhante,
+                        paying_passenger: false,
+                    })
+                } 
             })
             this.setState({ passageirosAcompanhantesPost: x })
         }
     }
-    popularCamposContratoEdit() {
+    popularCamposContratoEdit(contrato) {
+        this.setState({
+            idContrato: contrato.data.id_travel_contract,
+            localEmbarque: contrato.data.boarding_location,
+            localDesembarque: contrato.data.landingLocation,
+            active: contrato.data.active,
+            pacoteViagem: {
+                idPacoteViagem: contrato.data.id_travel_package,
+                nomePacoteViagem: contrato.data.travel_package.name_travel_package,
+                localOrigem: contrato.data.travel_package.origin_name,
+                localDestino: contrato.data.travel_package.destination_name,
+                dataInicio: contrato.data.travel_package.start_date,
+                dataFim: contrato.data.travel_package.end_date,
+            },
+            empresaContratada: {
+                idEmpresaContratada: contrato.data.company.id_company,
+                cnpjContratada: contrato.data.company.cnpj,
+                nomeFantasiaContratada: contrato.data.company.fantasy_name,
+            }
+        })
+    }
+
+    popularPassageirosContratoEdit(contrato) {
+        let contratante = [];
+        let acompanhantes = [];
+        let temp = [];
+        contrato.data.passengers.forEach((item) => {
+            if (item.contracted_passenger) {
+                temp.push({
+                    idPessoa: item.individual.id_individual,
+                    idPessoaContrato: item.id_passenger_travel_contract,
+                    nomePessoa: item.individual.name_individual,
+                    sobreNomePessoa: item.individual.last_name,
+                    cpfPessoa: item.individual.cpf,
+                    rgPessoa: item.individual.rg,
+                })
+            } else {
+                acompanhantes.push({
+                    passageiroAcompanhante: item.individual.id_individual,
+                    idPessoaContrato: item.id_passenger_travel_contract,
+                    nomePessoaAcompanhante: item.individual.name_individual,
+                    sobreNomePessoaAcompanhante: item.individual.last_name,
+                    cpfPessoaAcompanhante: item.individual.cpf,
+                    rgPessoaAcompanhante: item.individual.rg,
+                })
+            }
+        })
+        contratante = temp[0];
+        this.form.current.setFields([{
+            name: 'acompanhantes',
+            value: acompanhantes,
+        }])
+        this.setState({
+            passageiroContratante: contratante,
+            passageiroAcompanhante: acompanhantes,
+        })
     }
 
     popularEmpresas(empresas) {
@@ -268,22 +333,43 @@ class ContractInsert extends Component {
     }
 
     addPassageiroAcompanhante(value, key, index) {
-        let temp = this.state.passageiroAcompanhante;
-        let pas = []
+        let temp = this.state.passageiroAcompanhante ? this.state.passageiroAcompanhante : [];
+        let pas = null
         this.state.passageiros.forEach((item) => {
             if (item.idPessoa === value) {
-                pas.push({
-                    idPassageiroAcompanhante: item.idPessoa,
-                    nomePessoa: item.nomePessoa,
-                    sobreNomePessoa: item.sobreNomePessoa,
-                    cpfPessoa: item.cpfPessoa,
-                    rgPessoa: item.rgPessoa,
-                })
+                pas = {
+                    passageiroAcompanhante: item.idPessoa,
+                    nomePessoaAcompanhante: item.nomePessoa,
+                    sobreNomePessoaAcompanhante: item.sobreNomePessoa,
+                    cpfPessoaAcompanhante: item.cpfPessoa,
+                    rgPessoaAcompanhante: item.rgPessoa,
+                }
             }
         })
-        temp[index] = pas;
+
+        let acompanhante = this.form.current.getFieldValue('acompanhantes')[index];
+        acompanhante = {
+            passageiroAcompanhante: pas.passageiroAcompanhante,
+            nomePessoaAcompanhante: pas.nomePessoaAcompanhante,
+            sobreNomePessoaAcompanhante: pas.sobreNomePessoaAcompanhante,
+            cpfPessoaAcompanhante: pas.cpfPessoaAcompanhante,
+            rgPessoaAcompanhante: pas.rgPessoaAcompanhante,
+        }
+        temp.push(acompanhante)
+        this.form.current.setFields([{
+            name: 'acompanhantes',
+            value: temp,
+        }])
         this.setState({
             passageiroAcompanhante: temp,
+        })
+    }
+
+    removeLista(index) {
+        let remove = this.state.passageiroAcompanhante;
+        remove.splice(index, 1);
+        this.setState({
+            passageiroAcompanhante: remove
         })
     }
 
@@ -294,18 +380,18 @@ class ContractInsert extends Component {
 
     imprimirContrato = async (e) => {
         e.preventDefault();
+        console.log(this.state);
         if (!this.state.idContrato) {
             notification.warning({
                 message: "Não é possível imprimir contrato",
                 description: "Necessário salvar o contrato antes"
             })
-            console.log(this.state);
         } else {
             try {
                 this.setState({ loadingPrint: true });
                 await api.get('api/contract/pdf', {
                     params: {
-                        idTravelContract: this.state.idContrato
+                        id: this.state.idContrato
                     }
                 })
             } catch (error) {
@@ -315,6 +401,8 @@ class ContractInsert extends Component {
                         description: `Motivo: ${error.response.data.message}`
                     })
                 }
+            } finally {
+                this.setState({ loadingPrint: false })
             }
         }
 
@@ -328,14 +416,6 @@ class ContractInsert extends Component {
     }
 
     async componentDidMount() {
-        if (this.props.match.params.id != null) {
-            const contrato = await api.get(`/api/travelcontract/id`, {
-                params: {
-                    id: this.props.match.params.id
-                }
-            });
-            this.popularCamposContratoEdit(contrato);
-        }
         try {
             const empresasContratadas = await api.get('/api/companySystem');
             this.popularEmpresas(empresasContratadas);
@@ -377,12 +457,32 @@ class ContractInsert extends Component {
             })
             this.popularPassageiros(passageiros);
         } catch (error) {
-
+            if (error.response) {
+                notification.warning({
+                    message: "Não foi possível carregar os passageiros",
+                    description: `Motivo: ${error.response.data.message}`
+                })
+            }
         }
-
+        if (this.props.match.params.id != null) {
+            try {
+                const contrato = await api.get(`/api/travelcontract/id`, {
+                    params: {
+                        id: this.props.match.params.id
+                    }
+                });
+                this.popularCamposContratoEdit(contrato);
+                this.popularPassageirosContratoEdit(contrato);
+            } catch (error) {
+                if (error.response) {
+                    notification.error({
+                        message: "Não foi possível carregar o contrato para edição",
+                        description: `Motivo: ${error.response.data.message}`
+                    })
+                }
+            }
+        }
     }
-
-
 
     render() {
         return (
@@ -392,21 +492,13 @@ class ContractInsert extends Component {
                         <Row />
                         <Row>
                             <Col md={12}>
-                                <Form name="formContrato" onFinish={this.saveContract}>
+                                <Form name="formContrato" ref={this.form} onFinish={this.saveContract}>
                                     <Row>
                                         <div className="col-md-2">
                                             <ControlLabel>Código Identificador:</ControlLabel>
                                             <input name="idContrato" value={this.state.idContrato}
                                                 type="number" className="form-control"
                                                 placeholder="Código do contrato" disabled onChange={this.onChange} />
-                                        </div>
-                                        <div className="col-md-8"></div>
-                                        <div className="col-md-2">
-                                            <Button loading={this.state.loadingPrint}
-                                                type="primary" shape="round"
-                                                size="large"
-                                                onClick={this.imprimirContrato}
-                                            ><FileDoneOutlined /> Imprimir Contrato </Button>
                                         </div>
                                     </Row>
                                     <Divider orientation="left">Contratada</Divider>
@@ -586,7 +678,7 @@ class ContractInsert extends Component {
                                                         <Space key={field.key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
                                                             <Form.Item
                                                                 {...field}
-                                                                name={[field.name, 'nomePassageiroAcompanhante']}
+                                                                name={[field.name, 'passageiroAcompanhante']}
                                                                 fieldKey={[field.fieldKey, 'idPassageiroAcompanhante']}
                                                                 rules={[{ required: true, message: 'Seleciona o passageiro acompanhante' }]}
                                                             >
@@ -594,8 +686,7 @@ class ContractInsert extends Component {
                                                                     style={{ textAlign: 'left', marginTop: '15px', fontSize: '14px', width: '200px' }}
                                                                     showSearch
                                                                     required
-                                                                    value={this.state.passageiroAcompanhante.idPassageiroAcompanhante}
-                                                                    name="passageiroAcompanhante"
+                                                                    name="selectPassageiroAcompanhante"
                                                                     placeholder="Selecione o acompanhante"
                                                                     onChange={(value, key) => this.addPassageiroAcompanhante(value, key, index)}
                                                                     optionFilterProp="children"
@@ -618,7 +709,7 @@ class ContractInsert extends Component {
                                                                 fieldKey={[field.fieldKey, 'idNomePessoaAcompanhante']}
                                                                 rules={[{ required: true, message: 'Selecione o passageiro acompanhante' }]}
                                                             >
-                                                                <input name="nomePessoa" value={this.state.passageiroAcompanhante.nomePessoa}
+                                                                <input name="nomePessoa"
                                                                     type="text" className="form-control" placeholder="Nome do Acompanhante"
                                                                     disabled onChange={this.onChange} />
                                                             </Form.Item>
@@ -629,7 +720,7 @@ class ContractInsert extends Component {
                                                                 fieldKey={[field.fieldKey, 'idSobreNomePessoaAcompanhante']}
                                                                 rules={[{ required: true, message: 'Selecione o passageiro acompanhante' }]}
                                                             >
-                                                                <input name="sobreNomePessoa" value={this.state.passageiroAcompanhante.sobreNomePessoa}
+                                                                <input name="sobreNomePessoa"
                                                                     type="text" className="form-control" placeholder="Sobrenome Acompanhante"
                                                                     disabled onChange={this.onChange} />
                                                             </Form.Item>
@@ -640,21 +731,21 @@ class ContractInsert extends Component {
                                                                 rules={[{ required: true, message: 'Selecione o passageiro acompanhante' }]}
                                                             >
                                                                 <InputMask mask="999.999.999-99" name="cpfPessoa"
-                                                                    value={this.state.passageiroAcompanhante.cpfPessoa}
+
                                                                     type="text" className="form-control"
                                                                     placeholder="XXX.XXX.XXX-XX" required onChange={this.onChange} disabled />
                                                             </Form.Item>
                                                             <Form.Item
                                                                 {...field}
-                                                                name={[field.name, 'cpfPessoaAcompanhante']}
-                                                                fieldKey={[field.fieldKey, 'idCpfPessoaAcompanhante']}
+                                                                name={[field.name, 'rgPessoaAcompanhante']}
+                                                                fieldKey={[field.fieldKey, 'idRgPessoaAcompanhante']}
                                                                 rules={[{ required: true, message: 'Selecione o passageiro acompanhante' }]}
                                                             >
-                                                                <input name="rgPessoa" value={this.state.passageiroAcompanhante.rgPessoa}
+                                                                <input name="rgPessoa"
                                                                     type="text" className="form-control" placeholder="XXXXXXX-X"
                                                                     disabled onChange={this.onChange} />
                                                             </Form.Item>
-                                                            <MinusCircleOutlined onClick={() => remove(field.name)} />
+                                                            <MinusCircleOutlined onClick={() => { remove(field.name); this.removeLista(index); }} />
                                                         </Space>
                                                     ))}
                                                     <Form.Item>
@@ -693,6 +784,24 @@ class ContractInsert extends Component {
                                             </Button>
                                         </div>
                                     </div>
+                                    {this.state.idContrato ?
+                                        <div className="ant-row ant-row-end" style={{ marginTop: "10px" }}>
+                                            <div className="ant-col">
+                                                <Button loading={this.state.loadingPrint}
+                                                    type="primary" shape="round"
+                                                    size="large"
+                                                    onClick={this.imprimirContrato}
+                                                ><FileDoneOutlined /> Imprimir Contrato </Button>
+                                            </div>
+                                            <div className="ant-col">
+                                                <Button
+                                                    type="primary" shape="round"
+                                                    size="large"
+                                                    onClick={this.limpaCamposContrato}
+                                                > Novo Contrato </Button>
+                                            </div>
+                                        </div>
+                                        : null}
                                 </Form>
                             </Col>
                         </Row>

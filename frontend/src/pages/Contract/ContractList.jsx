@@ -137,8 +137,8 @@ class ContractList extends Component {
   };
 
   alterarContrato(x) {
-    let cpf = this.removeCaractEspecial(x.cpf);
-    this.props.history.push(`/admin/Company/CompanyInsert/${cpf}`)
+    let id = x.codigo;
+    this.props.history.push(`/admin/Contract/ContractInsert/${id}`)
   }
 
   removeCaractEspecial(texto) {
