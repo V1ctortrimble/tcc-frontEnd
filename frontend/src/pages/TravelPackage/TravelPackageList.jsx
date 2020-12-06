@@ -185,15 +185,14 @@ class PassengerList extends Component {
 
         try {
             this.populaCamposAtivar(x.codigo);
-            await api.put('api/persons/individual/', this.dataPacoteViagem, {
-                params: {
-                    codigo: x.codigo
-                },
+            await api.put('/api/travelpackage/', this.dataPacoteViagem, {
+                active: true,
+                id_travel_package: this.state.idViagem
             });
             notification.success({
                 message: `Viagem ativada com sucesso`,
             });
-            this.buscarIndividualApi();
+            this.buscarPacoteViagemApi();
         } catch (error) {
             if (error.response) {
                 notification.error({
@@ -207,12 +206,12 @@ class PassengerList extends Component {
     async desativaViagem() {
         try {
             this.populaCamposDesativar();
-            await api.put('api/persons/individual/', this.dataPacoteViagem, {
+            await api.put('/api/travelpackage/', this.dataPacoteViagem, {
             });
             notification.warning({
                 message: `Viagem desativada com sucesso`,
             });
-            this.buscarIndividualApi();
+            this.buscarPacoteViagemApi();
         } catch (error) {
             if (error.response) {
                 notification.error({
@@ -223,21 +222,17 @@ class PassengerList extends Component {
         }
     }
 
-    populaCamposAtivar(codigo) {
+    populaCamposAtivar(idPacoteViagem) {
         this.dataPacoteViagem = {
-            individual: {
-                active: true,
-                codigo: codigo
-            }
+            active: true,
+            id_travel_package: idPacoteViagem,
         }
     }
 
-    populaCamposDesativar(x) {
+    populaCamposDesativar() {
         this.dataPacoteViagem = {
-            individual: {
-                active: false,
-                codigo: x.codigo
-            }
+            active: false,
+            id_travel_package: this.state.codigoParaDesativar          
         }
     }
 
@@ -248,7 +243,7 @@ class PassengerList extends Component {
         this.setState(state);
     }
 
-    async buscarIndividualApi(current = 0, size = 10) {
+    async buscarPacoteViagemApi(current = 0, size = 10) {
         this.setState({ loading: true });
         let x = [];
         try {
@@ -312,7 +307,7 @@ class PassengerList extends Component {
     }
 
     async componentDidMount() {
-        this.buscarIndividualApi();
+        this.buscarPacoteViagemApi();
     }
 
     render() {
@@ -398,7 +393,7 @@ class PassengerList extends Component {
                                         </Row>
                                         <div className="ant-row ant-row-end" style={{ marginTop: '30px' }}>
                                             <div className="ant-col">
-                                                <Button size="middle" onClick={() => this.buscarIndividualApi()}
+                                                <Button size="middle" onClick={() => this.buscarPacoteViagemApi()}
                                                     type="primary" loading={this.state.loading}>Filtrar</Button>
                                             </div>
                                         </div>
@@ -421,7 +416,7 @@ class PassengerList extends Component {
                                     showSizeChanger: true,
                                 }}
                                 size="middle"
-                                onChange={(pagination) => { this.buscarIndividualApi((pagination.current - 1), pagination.pageSize) }} />
+                                onChange={(pagination) => { this.buscarPacoteViagemApi((pagination.current - 1), pagination.pageSize) }} />
                         </Col>
                     </Row>
                 </Grid>

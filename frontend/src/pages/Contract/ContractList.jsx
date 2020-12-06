@@ -88,7 +88,7 @@ class ContractList extends Component {
       pageSize: "",
       total: "",
     },
-    codigo: "",
+    idContract: null,
     cpf: "",
     nome: "",
     nomeViagem: "",
@@ -109,7 +109,7 @@ class ContractList extends Component {
     ]
   }
 
-  dataCompany = {};
+  dataContract = {};
 
   handleClick = () => {
     this.props.history.push("/admin/Contract/ContractInsert.jsx")
@@ -124,7 +124,7 @@ class ContractList extends Component {
   };
 
   confirmarModal = () => {
-    this.desativaEmpresaSistema();
+    this.desativaContrato();
     this.setState({
       visible: false,
     });
@@ -149,13 +149,9 @@ class ContractList extends Component {
     let cpf = this.removeCaractEspecial(x.cpf);
     try {
       this.populaCamposAtivar(cpf);
-      await api.put('api/persons/company/', this.dataCompany, {
-        params: {
-          cpf: cpf
-        },
-      });
+      await api.put('/api/travelcontract/', this.dataContract)
       notification.success({
-        message: `Empresa ativada com sucesso`,
+        message: `Contrato ativado com sucesso`,
       });
       this.buscarCompanyApi();
     } catch (error) {
@@ -171,13 +167,9 @@ class ContractList extends Component {
   async desativaContrato() {
     try {
       this.populaCamposDesativar();
-      await api.put('api/persons/company/', this.dataCompany, {
-        params: {
-          cpf: this.removeCaractEspecial(this.state.cpfParaDesativar)
-        },
-      });
+      await api.put('/api/travelcontract/', this.dataContract)
       notification.warning({
-        message: `Empresa desativada com sucesso`,
+        message: `Contrato desativado com sucesso`,
       });
       this.buscarCompanyApi();
     } catch (error) {
@@ -194,21 +186,17 @@ class ContractList extends Component {
     return cpf.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g, "$1.$2.$3/$4-$5");
   }
 
-  populaCamposAtivar(cpf) {
-    this.dataCompany = {
-      company: {
-        active: true,
-        cpf: cpf
-      }
+  populaCamposAtivar(idContract) {
+    this.dataContract = {
+     active: true,
+     id_travel_contract: idContract,
     }
   }
 
   populaCamposDesativar() {
-    this.dataCompany = {
-      company: {
-        active: false,
-        cpf: this.removeCaractEspecial(this.state.cpfParaDesativar)
-      }
+    this.dataContract = {
+     active: false,
+     id_travel_contract: this.state.idContract
     }
   }
 
