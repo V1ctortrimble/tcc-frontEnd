@@ -43,7 +43,7 @@ class ContractInsert extends Component {
             telefonePessoa: "",
         },
         passageiroAcompanhante: null,
-        passageirosAcompanhantesPost: [{}],
+        passageirosAcompanhantesPost: null,
         localEmbarque: "",
         localDesembarque: "",
 
@@ -151,7 +151,7 @@ class ContractInsert extends Component {
 
     populaAcompanhantes() {
         let acompanhantes = this.state.passageiroAcompanhante;
-        let x = [];
+        let x = null;
         if (acompanhantes) {
             console.log("Passei aqui")
             acompanhantes.forEach((item) => {
@@ -164,9 +164,7 @@ class ContractInsert extends Component {
             this.setState({ passageirosAcompanhantesPost: x })
         }
     }
-
     popularCamposContratoEdit() {
-
     }
 
     popularEmpresas(empresas) {
