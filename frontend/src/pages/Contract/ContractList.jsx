@@ -335,7 +335,7 @@ class ContractList extends Component {
                         <ControlLabel>Data Emissão</ControlLabel>
                         <input name="openData" value={this.state.openDate}
                           type="text" className="form-control"
-                          placeholder="" onChange={this.onChange} />
+                          placeholder="01/01/2020" onChange={this.onChange} />
                       </div>
                       <div className="col-md-1">
                         <ControlLabel>Status</ControlLabel>
