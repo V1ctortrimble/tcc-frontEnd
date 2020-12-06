@@ -36,6 +36,7 @@ import TravelPackageInsert from "pages/TravelPackage/TravelPackageInsert.jsx"
 import Company from "pages/Company/CompanyList.jsx"
 import CompanyInsert from "pages/Company/CompanyInsert.jsx"
 import ContractList from "pages/Contract/ContractList.jsx"
+import ContractInsert from "pages/Contract/ContractInsert.jsx"
 
 
 const dashboardRoutes = [
@@ -60,6 +61,30 @@ const dashboardRoutes = [
     name: "Alterar Passageiro",
     icon: "pe-7s-culture",
     component: PassengerInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/Contract/ContractList.jsx",
+    name: "Contratos de Viagens",
+    icon: "pe-7s-note2",
+    component: ContractList,
+    layout: "/admin",
+    visibleOnMenu: true,
+  },
+  {
+    path: "/Contract/ContractInsert.jsx",
+    name: "Cadastro de Contrato de Viagem",
+    icon: "pe-7s-note2",
+    component: ContractInsert,
+    layout: "/admin",
+    visibleOnMenu: false,
+  },
+  {
+    path: "/Contract/ContractInsert/:id",
+    name: "Alterar Contrato de Viagem",
+    icon: "pe-7s-note2",
+    component: ContractInsert,
     layout: "/admin",
     visibleOnMenu: false,
   },
@@ -167,15 +192,6 @@ const dashboardRoutes = [
     layout: "/admin",
     visibleOnMenu: true,
   },
-  {
-    path: "/Contract/ContractList.jsx",
-    name: "Contract",
-    icon: "pe-7s-add-user",
-    component: ContractList,
-    layout: "/admin",
-    visibleOnMenu: true,
-  },
-  
  /* 
  {
     path: "/user",

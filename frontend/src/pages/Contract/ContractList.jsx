@@ -112,7 +112,7 @@ class ContractList extends Component {
   dataCompany = {};
 
   handleClick = () => {
-    this.props.history.push("/admin/Company/CompanyInsert.jsx")
+    this.props.history.push("/admin/Contract/ContractInsert.jsx")
   }
 
   showModal = (x) => {
