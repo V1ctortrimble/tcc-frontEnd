@@ -16,37 +16,37 @@ class ContractList extends Component {
   columns = [
     {
       title: 'Código',
-      width: 120,
+      width: 70,
       dataIndex: 'codigo',
       key: 'codigo',
       fixed: 'left',
     },
     {
       title: 'CPF Contratante',
-      width: 120,
+      width: 100,
       dataIndex: 'cpf',
       key: 'cpf',
       fixed: 'left',
     },
     {
       title: 'Nome Contratante',
-      width: 120,
+      width: 80,
       dataIndex: 'nome',
       key: 'nome',
       fixed: 'left',
     },
     {
       title: 'Nome Viagem',
-      width: 120,
+      width: 100,
       dataIndex: 'nomeViagem',
       key: 'nome',
       fixed: 'left',
     },
     {
-      title: 'Data de Abertura',
-      width: 120,
-      dataIndex: 'openDate',
-      key: 'openDate',
+      title: 'Data de Emissão',
+      width: 80,
+      dataIndex: 'dataEmissao',
+      key: 'dataEmissao',
       fixed: 'left',
     },
     {
@@ -84,11 +84,12 @@ class ContractList extends Component {
   state = {
     data: [{}],
     pager: {
-      current: "",
-      pageSize: "",
+      current: 1,
+      pageSize: 10,
       total: "",
     },
     idContract: null,
+    idContractDesativar: null,
     cpf: "",
     nome: "",
     nomeViagem: "",
@@ -119,6 +120,7 @@ class ContractList extends Component {
     let cpf = x.cpf;
     this.setState({
       cpfParaDesativar: cpf,
+      idContractDesativar: x.codigo,
       visible: true,
     });
   };
@@ -153,7 +155,7 @@ class ContractList extends Component {
       notification.success({
         message: `Contrato ativado com sucesso`,
       });
-      this.buscarCompanyApi();
+      this.buscarContratoApi();
     } catch (error) {
       if (error.response) {
         notification.error({
@@ -167,11 +169,15 @@ class ContractList extends Component {
   async desativaContrato() {
     try {
       this.populaCamposDesativar();
-      await api.put('/api/travelcontract/', this.dataContract)
+      await api.put('/api/travelcontract/', this.dataContract, {
+        params: {
+          id: this.state.idContractDesativar,
+        }
+      })
       notification.warning({
         message: `Contrato desativado com sucesso`,
       });
-      this.buscarCompanyApi();
+      this.buscarContratoApi();
     } catch (error) {
       if (error.response) {
         notification.error({
@@ -196,7 +202,7 @@ class ContractList extends Component {
   populaCamposDesativar() {
     this.dataContract = {
      active: false,
-     id_travel_contract: this.state.idContract
+     id_travel_contract: this.state.idContractDesativar,
     }
   }
 
@@ -220,39 +226,23 @@ class ContractList extends Component {
     }
   }
 
-  async buscarCompanyApi(current = 0, size = 10) {
+  async buscarContratoApi() {
     this.setState({ loading: true });
     let x = [];
     try {
-      const data = await api.get('/api/persons/company/filter', {
-        params: {
-          page: current,
-          size: size,
-          cpf: this.removeCaractEspecial(this.state.cpf),
-          socialreason: this.state.razaoSocial,
-          fantasyname: this.state.nomeFantasia,
-          sort: 'fantasyName,asc',
-          active: this.state.status
-        },
-      });
-      data.data.content.forEach((item, index) => {
+      const data = await api.get('/api/travelcontract/all')
+      data.data.forEach((item) => {
+        console.log(item);
         x.push({
-          key: index,
-          cpf: this.mascaraCpf(item.cpf),
-          fantasyName: item.fantasy_name,
-          socialReason: item.social_reason,
-          openDate: moment(item.open_date).format("DD/MM/YYYY"),
+          codigo: item.id_travel_contract,
+          cpf: this.mascaraCpf(item.passengers[0].individual.cpf),
+          nome: item.passengers[0].individual.name_individual,
+          nomeViagem: item.travel_package.name_travel_package,
+          dataEmissao: moment(item.issue_date).format("DD/MM/YYYY"),
           status: item.active
         })
       })
       this.setState({ data: x });
-      this.setState({
-        pager: {
-          current: data.data.pageNumber,
-          pageSize: data.data.pageSize,
-          total: data.data.totalElements,
-        }
-      })
     } catch (error) {
       if (error.response) {
         if (error.response.status === 403) {
@@ -274,7 +264,7 @@ class ContractList extends Component {
   }
 
   async componentDidMount() {
-    this.buscarCompanyApi();
+    this.buscarContratoApi();
   }
 
   render() {
@@ -291,7 +281,7 @@ class ContractList extends Component {
             centered
           >
             <div className="col-md-12" style={{ textAlign: 'center' }}>
-              Tem certeza que deseja desativar a
+              Tem certeza que deseja desativar o
                         </div>
             <div className="col-md-12" style={{ textAlign: 'center' }}>
               contrato CPF: {this.state.cpfParaDesativar} ?
@@ -365,7 +355,7 @@ class ContractList extends Component {
                     </Row>
                     <div className="ant-row ant-row-end" style={{ marginTop: '30px' }}>
                       <div className="ant-col">
-                        <Button size="middle" onClick={() => this.buscarCompanyApi()}
+                        <Button size="middle" onClick={() => this.buscarContratoApi()}
                           type="primary" loading={this.state.loading}>Filtrar</Button>
                       </div>
                     </div>
@@ -383,7 +373,7 @@ class ContractList extends Component {
                 showSizeChanger: true,
               }}
                 size="middle"
-                onChange={(pagination) => { this.buscarCompanyApi((pagination.current - 1), pagination.pageSize) }} />
+                onChange={(pagination) => { this.buscarContratoApi((pagination.current - 1), pagination.pageSize) }} />
             </Col>
           </Row>
         </Grid>

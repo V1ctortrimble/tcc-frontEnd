@@ -200,6 +200,7 @@ class ContractInsert extends Component {
         let contratante = [];
         let acompanhantes = [];
         let temp = [];
+        console.log(contrato);
         contrato.data.passengers.forEach((item) => {
             if (item.contracted_passenger) {
                 temp.push({
@@ -209,6 +210,8 @@ class ContractInsert extends Component {
                     sobreNomePessoa: item.individual.last_name,
                     cpfPessoa: item.individual.cpf,
                     rgPessoa: item.individual.rg,
+                    telefonePessoa: item.individual.person.contacts[0].phone,
+                    celularPessoa: item.individual.person.contacts[0].cell_phone,
                 })
             } else {
                 acompanhantes.push({

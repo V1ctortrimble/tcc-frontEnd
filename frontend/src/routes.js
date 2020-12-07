@@ -23,8 +23,8 @@ import Notifications from "views/Notifications.jsx";
 import UserRegistration from "pages/UserRegistration/UserRegistration";
 import UserLister from "views/UserLister.jsx";
 import Upgrade from "views/Upgrade.jsx";
-import UserProfile from "views/UserProfile.jsx";*/
-import Icons from "views/Icons.jsx";
+import UserProfile from "views/UserProfile.jsx";
+import Icons from "views/Icons.jsx";*/
 import UserList from "pages/User/UserList";
 import UserInsert from "pages/User/UserInsert";
 import SystemCompanyList from "pages/SystemCompany/SystemCompanyList.jsx"
@@ -183,8 +183,8 @@ const dashboardRoutes = [
     component: UserInsert,
     layout: "/admin",
     visibleOnMenu: false,
-  },
-  {
+  }
+ /* {
     path: "/icons",
     name: "Icons",
     icon: "pe-7s-science",
@@ -192,7 +192,7 @@ const dashboardRoutes = [
     layout: "/admin",
     visibleOnMenu: true,
   },
- /* 
+  
  {
     path: "/user",
     name: "Cadastro de Usuário",
