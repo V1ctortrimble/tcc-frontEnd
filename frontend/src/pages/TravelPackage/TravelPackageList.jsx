@@ -206,10 +206,21 @@ class PassengerList extends Component {
         try {
             this.setState({ loadingListaPassageiros: true });
             await api.get('api/list/pdf', {
+                responseType: 'arraybuffer',
+                headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/pdf'}
+                ,
                 params: {
-                    idtravelpackage: idtravelpackage
+                    idtravelpackage: idtravelpackage,
+                
                 }
-            })
+            }).then(function(response) {
+                var blob = new Blob([response.data], {
+                      type: 'application/pdf'
+                });
+                var url = window.URL.createObjectURL(blob)
+                window.open(url);})
         } catch (error) {
             if (error.response) {
                 notification.error({

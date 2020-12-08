@@ -156,10 +156,20 @@ class ContractList extends Component {
           try {
               this.setState({ loadingPrint: true });
               await api.get('api/contract/pdf', {
-                  params: {
+                responseType: 'arraybuffer',
+                headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/pdf'}
+                ,  
+                params: {
                       id: idContrato
                   }
-              })
+              }).then(function(response) {
+                var blob = new Blob([response.data], {
+                      type: 'application/pdf'
+                });
+                var url = window.URL.createObjectURL(blob)
+                window.open(url);})
           } catch (error) {
               if (error.response) {
                   notification.error({

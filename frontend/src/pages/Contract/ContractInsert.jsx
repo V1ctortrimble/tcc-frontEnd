@@ -173,7 +173,7 @@ class ContractInsert extends Component {
                         id_individual: item.passageiroAcompanhante,
                         paying_passenger: false,
                     })
-                } 
+                }
             })
             this.setState({ passageirosAcompanhantesPost: x })
         }
@@ -396,10 +396,20 @@ class ContractInsert extends Component {
             try {
                 this.setState({ loadingPrint: true });
                 await api.get('api/contract/pdf', {
+                    responseType: 'arraybuffer',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/pdf'
+                    },
                     params: {
                         id: this.state.idContrato
                     }
-                })
+                }).then(function(response) {
+                    var blob = new Blob([response.data], {
+                          type: 'application/pdf'
+                    });
+                    var url = window.URL.createObjectURL(blob)
+                    window.open(url);})
             } catch (error) {
                 if (error.response) {
                     notification.error({
