@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
 import { Button, Table, Collapse, notification, Tag, Modal, Select } from "antd";
 import 'antd/dist/antd.css';
-import { EditFilled, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { EditFilled, CloseCircleOutlined, CheckCircleOutlined, PrinterOutlined } from '@ant-design/icons';
 import { cpf } from "cpf-cnpj-validator";
 import InputMask from "react-input-mask";
 import api from '../../services/api';
@@ -73,6 +73,7 @@ class ContractList extends Component {
         return x.status ?
           (<div>
             <Button onClick={() => this.alterarContrato(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
+            <Button onClick={() => this.imprimirContrato(x)} loading={this.state.loadingPrint} type="primary" size="small" style={{ marginRight: '5%' }}><PrinterOutlined /></Button>
             <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><CloseCircleOutlined /></Button>
           </div>) : <div>
             <Button className="ant-btn-personalized" onClick={() => this.ativarContrato(x)} type="primary" size="small" style={{ marginRight: '5%' }}><CheckCircleOutlined /></Button>
@@ -97,6 +98,7 @@ class ContractList extends Component {
     cpfParaAtivar: "",
     status: true,
     loading: false,
+    loadingPrint: false,
     visible: false,
     statusOpcoes: [
       {
@@ -141,6 +143,35 @@ class ContractList extends Component {
   alterarContrato(x) {
     let id = x.codigo;
     this.props.history.push(`/admin/Contract/ContractInsert/${id}`)
+  }
+
+  imprimirContrato = async (e) => {
+    let idContrato = Number(e.codigo);
+      if (!idContrato) {
+          notification.warning({
+              message: "Não é possível imprimir contrato",
+              description: "Código não encontrado"
+          })
+      } else {
+          try {
+              this.setState({ loadingPrint: true });
+              await api.get('api/contract/pdf', {
+                  params: {
+                      id: idContrato
+                  }
+              })
+          } catch (error) {
+              if (error.response) {
+                  notification.error({
+                      message: "Não foi possível imprimir o contrato",
+                      description: `Motivo: ${error.response.data.message}`
+                  })
+              }
+          } finally {
+              this.setState({ loadingPrint: false })
+          }
+      }
+
   }
 
   removeCaractEspecial(texto) {
