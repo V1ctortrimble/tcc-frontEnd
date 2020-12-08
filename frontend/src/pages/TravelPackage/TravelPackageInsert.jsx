@@ -128,7 +128,7 @@ class TravelPackageInsert extends Component {
             active: true,
             adult_price: this.state.precoAdulto,
             child_price: this.state.precoCrianca,
-            descr_travel_package: this.state.descViagem,
+            desc_travel_package: this.state.descViagem,
             destination_name: this.state.localDestino,
             end_date: this.state.dataFim,
             estimated_end_time: [horaFim, minutoFim, 0, 0],

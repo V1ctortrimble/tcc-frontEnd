@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Grid, Row, Col, ControlLabel } from "react-bootstrap";
 import { Button, Table, Collapse, notification, Modal, Tag, Select } from "antd";
 import 'antd/dist/antd.css';
-import { EditFilled, UserAddOutlined, UserDeleteOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { EditFilled, UserAddOutlined, UserDeleteOutlined, UnorderedListOutlined, CopyOutlined } from '@ant-design/icons';
 import api from "services/api";
 import moment from 'moment';
 //import InputMask from "react-input-mask";
@@ -84,7 +84,8 @@ class PassengerList extends Component {
                         <div>
                             <Button onClick={() => this.imprimirListaPassageiros(x)} loading={this.state.loadingListaPassageiros} type="primary" size="small" style={{ marginRight: '5%' }}><UnorderedListOutlined />Passageiros</Button>
                         </div>
-                        <div style={{marginTop: '5px'}}>
+                        <div style={{ marginTop: '5px' }}>
+                            <Button onClick={() => this.divulgarViagem(x)} type="primary" size="small" style={{ marginRight: '5%' }}><CopyOutlined /></Button>
                             <Button onClick={() => this.alterarViagem(x)} type="primary" size="small" style={{ marginRight: '5%' }}><EditFilled /></Button>
                             <Button onClick={() => this.showModal(x)} type="primary" danger size="small"><UserDeleteOutlined /></Button>
                         </div>
@@ -97,6 +98,7 @@ class PassengerList extends Component {
 
     state = {
         loadingListaPassageiros: false,
+        loadingDivulgar: false,
         data: [{}],
         pager: {
             current: 1,
@@ -111,9 +113,11 @@ class PassengerList extends Component {
         dataFim: "",
         loading: false,
         visible: false,
+        visibleDivulgar: false,
         codigoParaDesativar: null,
         codigoParaAtivar: null,
         status: true,
+        divulgarPacoteViagem: null,
         statusOpcoes: [
             {
                 valor: true,
@@ -150,12 +154,51 @@ class PassengerList extends Component {
     cancelarModal = () => {
         this.setState({
             visible: false,
+            visibleDivulgar: false,
         });
     };
 
+    divulgarViagem(x) {
+        this.carregarDadosViagem(x.codigo)
+        this.setState({
+            visibleDivulgar: true,
+        })
+    }
+
+    copyClipboard = (e) => {
+        this.textArea.select();
+        document.execCommand('copy');
+        e.target.focus();
+        notification.success({
+            message: "Dados copiados com sucesso!",
+            description: "Utilizar função colar (ctrl + V) aonde desejar",
+        })
+        this.cancelarModal();
+      };
+       
     alterarViagem(x) {
         let idViagem = x.codigo;
         this.props.history.push(`/admin/TravelPackage/TravelPackageInsert/${idViagem}`)
+    }
+
+    async carregarDadosViagem(id){
+        let idtravelpackage = Number(id);
+        try {
+            this.setState({ loadingDivulgar: true});
+            const dadosViagem = await api.get('api/travelpackage/id', {
+                params: {
+                    idtravelpackge: idtravelpackage
+                }
+            })
+            this.montaDadosDivulgarViagem(dadosViagem);
+        } catch (error) {
+            if (error.response){
+                notification.error({
+                    message: "Não foi possível carregar os dados para divulgar",
+                    description: `Motivo: ${error.response.data.message}`
+                })
+            }
+        }
     }
 
     async imprimirListaPassageiros(x) {
@@ -232,8 +275,22 @@ class PassengerList extends Component {
     populaCamposDesativar() {
         this.dataPacoteViagem = {
             active: false,
-            id_travel_package: this.state.codigoParaDesativar          
+            id_travel_package: this.state.codigoParaDesativar
         }
+    }
+
+    montaDadosDivulgarViagem(dadosViagem){
+        let texto = "";
+        texto = `Nome da Viagem: ${dadosViagem.data.name_travel_package} \n
+Destino para: ${dadosViagem.data.destination_name} \n
+Local de partida: ${dadosViagem.data.origin_name} \n
+Data de Saída: ${dadosViagem.data.start_date} \n
+Data de Chegada: ${dadosViagem.data.end_date} \n
+Valor por Adulto: ${dadosViagem.data.adult_price} \n
+Valor por Criança: ${dadosViagem.data.child_price} \n
+Forma de Pagamento: ${dadosViagem.data.payment_methods}`;
+
+        this.setState({divulgarPacoteViagem: texto});
     }
 
     onChange = (event) => {
@@ -255,6 +312,7 @@ class PassengerList extends Component {
                     nametravelpackage: this.state.nomeViagem,
                     destinationName: this.state.localDestino,
                     originname: this.state.localOrigem,
+                    sort: 'nameTravelPackage,asc',
                     active: this.state.status
                 },
             });
@@ -315,6 +373,23 @@ class PassengerList extends Component {
             <div className="content">
                 <Grid fluid>
                     <Modal
+                        title="Dados da Viagem"
+                        visible={this.state.visibleDivulgar}
+                        onOk={this.copyClipboard}
+                        onCancel={this.cancelarModal}
+                        okText="Copiar Dados"
+                        cancelText="Cancelar"
+                        centered
+                    >
+                        <div className="col-md-12" style={{ textAlign: 'center' }}>
+                            <textarea rows={15} name="divulgarPacoteViagem" value={this.state.divulgarPacoteViagem}
+                                ref={(textarea) => this.textArea = textarea}
+                                type="text" className="form-control"
+                                style={{ padding: "8px 12px", marginTop: "10px", marginBottom: "10px" }}
+                                placeholder="Os dados da viagem não foram carregados." />
+                        </div>
+                    </Modal>
+                    <Modal
                         title="Confirmação"
                         visible={this.state.visible}
                         onOk={this.confirmarModal}
@@ -329,8 +404,6 @@ class PassengerList extends Component {
                         <div className="col-md-12" style={{ textAlign: 'center' }}>
                             a viagem de código: {this.state.codigoParaDesativar} ?
                         </div>
-                        <p></p>
-                        <p></p>
                     </Modal>
                     <Row>
                         <Col md={12}>

@@ -58,7 +58,7 @@ class ContractInsert extends Component {
 
     limpaCamposContrato = async () => {
         this.setState({
-            idContrato: "",
+            idContrato: null,
             empresaContratada: {
                 idEmpresaContratada: null,
                 cnpjContratada: "",
@@ -85,6 +85,10 @@ class ContractInsert extends Component {
             localEmbarque: "",
             localDesembarque: "",
         })
+        this.form.current.setFields([{
+            name: 'acompanhantes',
+            value: null,
+        }])
         this.props.history.push(`/admin/Contract/ContractInsert.jsx`)
     }
 
@@ -383,7 +387,6 @@ class ContractInsert extends Component {
 
     imprimirContrato = async (e) => {
         e.preventDefault();
-        console.log(this.state);
         if (!this.state.idContrato) {
             notification.warning({
                 message: "Não é possível imprimir contrato",
